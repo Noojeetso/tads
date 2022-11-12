@@ -23,17 +23,9 @@ init_record_table(record_table_t *record_table, size_t max_size)
     return EXIT_SUCCESS;
 }
 
-void clear_keys(record_table_t *record_table)
-{
-    for (size_t i = 0; i < record_table->size; i++)
-        if (record_table->keys[i].theater_name_long != NULL)
-            free(record_table->keys[i].theater_name_long);
-}
-
 void
 clear_table(record_table_t *record_table)
 {
-    // clear_keys(record_table);
     for (size_t i = 0; i < record_table->size; i++)
         free_record_safe(&record_table->records[i]);
     record_table->size = 0;
