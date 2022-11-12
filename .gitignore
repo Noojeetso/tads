@@ -1,0 +1,8 @@
+*.exe
+*.o
+*.gcda
+*.gcno
+*.gcov
+compile_commands.json
+.cache
+tmp/
