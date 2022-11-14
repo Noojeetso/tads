@@ -113,27 +113,6 @@ compare_efficiency()
     if (rc != EXIT_SUCCESS)
         return rc;
 
-    puts("Вычисление времени работы быстрой сортировки без ключей");
-
-    for (int size_index = 0; size_index < sizeof(sizes) / sizeof(sizes[0]); size_index++)
-    {
-        cpu_time_used_total = 0;
-        for (long i = 0; i < SORT_ITERATIONS; i++)
-        {
-            clear_table(&record_table);
-            add_records_from_file(&record_table, file_names[size_index]);
-            start_clock = clock();
-            qsort(record_table.records, record_table.size, sizeof(record_t), compare_records_by_theater_name);
-            end_clock = clock();
-            cpu_time_used_total += (end_clock - start_clock) / (CLOCKS_PER_SEC / 1000000LLU);
-        }
-        speed_quick[size_index] = cpu_time_used_total / SORT_ITERATIONS;
-        if (speed_quick[size_index] == 0)
-            speed_quick[size_index] = 1;
-    }
-
-    puts("Выполнено");
-
     puts("Вычисление времени работы быстрой сортировки с ключами");
 
     for (int size_index = 0; size_index < sizeof(sizes) / sizeof(sizes[0]); size_index++)
@@ -142,7 +121,9 @@ compare_efficiency()
         for (long i = 0; i < SORT_ITERATIONS; i++)
         {
             clear_table(&record_table);
-            add_records_from_file(&record_table, file_names[size_index]);
+            rc = add_records_from_file(&record_table, file_names[size_index]);
+            if (rc != EXIT_SUCCESS)
+                return rc;
             start_clock = clock();
             qsort(record_table.keys, record_table.size, sizeof(key_t), compare_keys_by_theater_name);
             end_clock = clock();
@@ -155,7 +136,7 @@ compare_efficiency()
 
     puts("Выполнено");
 
-    puts("Вычисление времени работы сортировки пузырьком без ключей");
+    puts("Вычисление времени работы быстрой сортировки без ключей");
 
     for (int size_index = 0; size_index < sizeof(sizes) / sizeof(sizes[0]); size_index++)
     {
@@ -164,14 +145,16 @@ compare_efficiency()
         {
             clear_table(&record_table);
             add_records_from_file(&record_table, file_names[size_index]);
+            if (rc != EXIT_SUCCESS)
+                return rc;
             start_clock = clock();
-            bubble_sort(record_table.records, record_table.size, sizeof(record_t), compare_records_by_theater_name);
+            qsort(record_table.records, record_table.size, sizeof(record_t), compare_records_by_theater_name);
             end_clock = clock();
             cpu_time_used_total += (end_clock - start_clock) / (CLOCKS_PER_SEC / 1000000LLU);
         }
-        speed_bubble[size_index] = cpu_time_used_total / SORT_ITERATIONS;
-        if (speed_bubble[size_index] == 0)
-            speed_bubble[size_index] = 1;
+        speed_quick[size_index] = cpu_time_used_total / SORT_ITERATIONS;
+        if (speed_quick[size_index] == 0)
+            speed_quick[size_index] = 1;
     }
 
     puts("Выполнено");
@@ -185,6 +168,8 @@ compare_efficiency()
         {
             clear_table(&record_table);
             add_records_from_file(&record_table, file_names[size_index]);
+            if (rc != EXIT_SUCCESS)
+                return rc;
             start_clock = clock();
             bubble_sort(record_table.keys, record_table.size, sizeof(key_t), compare_keys_by_theater_name);
             end_clock = clock();
@@ -197,6 +182,29 @@ compare_efficiency()
 
     puts("Выполнено");
 
+    puts("Вычисление времени работы сортировки пузырьком без ключей");
+
+    for (int size_index = 0; size_index < sizeof(sizes) / sizeof(sizes[0]); size_index++)
+    {
+        cpu_time_used_total = 0;
+        for (long i = 0; i < SORT_ITERATIONS; i++)
+        {
+            clear_table(&record_table);
+            add_records_from_file(&record_table, file_names[size_index]);
+            if (rc != EXIT_SUCCESS)
+                return rc;
+            start_clock = clock();
+            bubble_sort(record_table.records, record_table.size, sizeof(record_t), compare_records_by_theater_name);
+            end_clock = clock();
+            cpu_time_used_total += (end_clock - start_clock) / (CLOCKS_PER_SEC / 1000000LLU);
+        }
+        speed_bubble[size_index] = cpu_time_used_total / SORT_ITERATIONS;
+        if (speed_bubble[size_index] == 0)
+            speed_bubble[size_index] = 1;
+    }
+
+    puts("Выполнено");
+
     puts("Вычисление занимаемой памяти");
 
     char *long_str;
@@ -204,6 +212,8 @@ compare_efficiency()
     {
         clear_table(&record_table);
         add_records_from_file(&record_table, file_names[size_index]);
+        if (rc != EXIT_SUCCESS)
+            return rc;
 
         records_size_bytes[size_index] = sizeof(record_t) * sizes[size_index];
         for (size_t i = 0; i < record_table.size; i++)

@@ -315,7 +315,7 @@ add_records_from_file(record_table_t *record_table,
     file = fopen(file_name, "r");
     if (file == NULL)
     {
-        fprintf(stderr, "%s\n", "Не удалось открыть файл");
+        fprintf(stderr, "Не удалось открыть файл \"%s\"\n", file_name);
         return ERR_OPEN_FILE;
     }
 
@@ -324,6 +324,7 @@ add_records_from_file(record_table_t *record_table,
         rc = add_record(record_table, file, dummy_prompt);
         if (rc != EXIT_SUCCESS)
         {
+            fprintf(stderr, "Структура файла \"%s\" повреждена\n", file_name);
             fclose(file);
             return rc;
         }
@@ -335,7 +336,7 @@ add_records_from_file(record_table_t *record_table,
             break;
         if (ch != '\n')
         {
-            fprintf(stderr, "%s\n", "Структура файла повреждена");
+            fprintf(stderr, "Структура файла \"%s\" повреждена\n", file_name);
             fclose(file);
             return ERR_FILE_BROKEN;
         }
@@ -345,14 +346,15 @@ add_records_from_file(record_table_t *record_table,
     fgetc(file);
     if (!feof(file))
     {
-        fprintf(stderr, "%s\n", "Структура файла повреждена 2");
+        fprintf(stderr, "Структура файла \"%s\" повреждена\n", file_name);
+        fclose(file);
         return ERR_FILE_BROKEN;
     }
 
     rc = fclose(file);
     if (rc == EOF)
     {
-        fprintf(stderr, "%s\n", "Не удалось закрыть файл");
+        fprintf(stderr, "Не удалось закрыть файл \"%s\"\n", file_name);
         return ERR_CLOSE_FILE;
     }
 

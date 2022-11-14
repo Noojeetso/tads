@@ -4,7 +4,7 @@
 #include "table.h"
 
 #define MAX_SORT_TABLE_SIZE 5000
-#define SORT_ITERATIONS 2
+#define SORT_ITERATIONS 100
 #define SORT_AMOUNT 6
 
 int
