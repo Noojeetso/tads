@@ -184,7 +184,6 @@ unicode_format_print(char *str,
         printf(" %.*s", left_bytes, str + left_shift_bytes);
 
         offset_delta = shift_offset - str_length;
-        // spaces_after_end = remaining_width;
         spaces_after_end = offset_delta + target_width;
         offset_delta = MAX(offset_delta, 0);
         spaces_after_end = MAX(spaces_after_end, 0);
