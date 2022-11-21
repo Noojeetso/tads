@@ -20,16 +20,23 @@ typedef struct tree_node
 tree_node_t*
 new_node(int value);
 
+void
+free_tree(tree_node_t **tree);
+
 int
 print_heights(tree_node_t *avl,
               tree_node_t *bst);
 
-tree_node_t*
-insert_bst(tree_node_t *tree,
-           int value);
-
 int
-fill_bst(FILE *input_file,
+bst_push(tree_node_t **tree,
+         int value);
+/*
+tree_node_t*
+bst_insert(tree_node_t *tree,
+           int value);
+*/
+int
+bst_fill(FILE *input_file,
          tree_node_t **tree);
 
 int
@@ -37,12 +44,18 @@ bst_pop(tree_node_t **root,
         int value);
 
 tree_node_t*
-insert_avl(tree_node_t *tree,
+avl_insert(tree_node_t *tree,
            int value);
 
 int
-fill_avl(FILE *input_file,
+avl_push(tree_node_t **tree,
+         int value);
+
+int
+avl_fill(FILE *input_file,
          tree_node_t **tree);
+
+
 /*
 tree_node_t *
 avl_remove(tree_node_t *root,

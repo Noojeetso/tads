@@ -42,10 +42,18 @@ tree_to_dot(char *file_name,
             tree_node_t *tree)
 {
     int rc;
-    FILE *output_file = fopen(file_name, "w");
+    FILE *output_file;
+
+    if (tree == NULL)
+    {
+        fputs("Дерево не имеет ни одного узла\n", stderr);
+        return ERR_NULL_POINTER;
+    }
+
+    output_file = fopen(file_name, WRITE_MODE);
     if (output_file == NULL)
     {
-        fputs("Ошибка при открытии файла на запись", stderr);
+        fputs("Ошибка при открытии файла на запись\n", stderr);
         return ERR_OPEN_FILE;
     }
 
@@ -56,7 +64,7 @@ tree_to_dot(char *file_name,
     rc = fputs("digraph test_tree {\n", output_file);
     if (rc == EOF)
     {
-        fputs("Ошибка при записи в файл", stderr);
+        fputs("Ошибка при записи в файл\n", stderr);
         fclose(output_file);
         return ERR_WRITING_FILE;
     }
@@ -64,7 +72,7 @@ tree_to_dot(char *file_name,
     rc = write_dot_records(output_file, tree);
     if (rc != EXIT_SUCCESS)
     {
-        fputs("Ошибка при записи в файл", stderr);
+        fputs("Ошибка при записи в файл\n", stderr);
         fclose(output_file);
         return rc;
     }
@@ -80,7 +88,7 @@ tree_to_dot(char *file_name,
 
     if (fclose(output_file) == EOF)
     {
-        fputs("Ошибка при закрытии файла", stderr);
+        fputs("Ошибка при закрытии файла\n", stderr);
         return ERR_CLOSE_FILE;
     }
 
@@ -98,7 +106,7 @@ dot_to_svg(char *input_file_name,
         rc = execlp("dot", "dot", "-Tsvg", input_file_name, "-o", output_file_name, NULL);
         if (rc != EXIT_SUCCESS)
         {
-            fputs("Ошибка при создании изображения графика", stderr);
+            fputs("Ошибка при создании изображения графика\n", stderr);
             return rc;
         }
     }
@@ -114,13 +122,13 @@ open_svg(char *input_file_name)
 
     if (fork() == 0)
     {
-        dev_null = fopen("/dev/null", "r");
+        dev_null = fopen("/dev/null", READ_MODE);
         dup2(fileno(dev_null), 1);
         dup2(fileno(dev_null), 2);
         rc = execlp("eog", "eog", input_file_name, NULL);
         if (rc != EXIT_SUCCESS)
         {
-            fputs("Ошибка при открытии изображении графика", stderr);
+            fputs("Ошибка при открытии изображении графика\n", stderr);
             return rc;
         }
         fclose(dev_null);

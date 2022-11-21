@@ -24,6 +24,26 @@ new_node(int value)
 }
 
 void
+free_tree_r(tree_node_t *tree)
+{
+    if (tree == NULL)
+        return;
+
+    free_tree_r(tree->left);
+
+    free_tree_r(tree->right);
+
+    free(tree);
+}
+
+void
+free_tree(tree_node_t **tree)
+{
+    free_tree_r(*tree);
+    *tree = NULL;
+}
+
+void
 tree_apply(tree_node_t *tree,
            void (*func)(tree_node_t *tree, void *),
            void *arg)
@@ -80,7 +100,7 @@ print_heights(tree_node_t *avl,
     int *bst_nodes = calloc(avl->height + 1, sizeof(int));
 
     tree_apply(avl, count_avl_nodes, avl_nodes);
-    tree_apply(bst, count_avl_nodes, bst_nodes);
+    // tree_apply(bst, count_bst_nodes, bst_nodes);
 
     puts("АВЛ дерево:");
     puts("\tВысота\tКоличество");
@@ -97,7 +117,7 @@ print_heights(tree_node_t *avl,
 
 // Функции для ДДП
 tree_node_t*
-insert_bst(tree_node_t *tree,
+bst_insert(tree_node_t *tree,
            int value)
 {
     int cmp;
@@ -107,29 +127,49 @@ insert_bst(tree_node_t *tree,
     {
         node = new_node(value);
         if (node == NULL)
-            fputs("Ошибка выделения памяти под новый узел ДДП", stderr);
+            fputs("Ошибка выделения памяти под новый узел ДДП\n", stderr);
         return node;
     }
 
     cmp = compare_int(value, tree->value);
     if (cmp == 0)
-        abort();
+        return tree;
+        // abort();
     else if (cmp > 0)
-        tree->right = insert_bst(tree->right, value);
+        tree->right = bst_insert(tree->right, value);
     else
-        tree->left = insert_bst(tree->left, value);
+        tree->left = bst_insert(tree->left, value);
 
     return tree;
 }
 
 int
-fill_bst(FILE *input_file,
+bst_push(tree_node_t **tree,
+         int value)
+{
+    tree_node_t *new_root;
+
+    if (find_node(*tree, value) != NULL)
+    {
+        fputs("Узел с таким значением уже существует\n", stderr);
+        return ERR_ALREADY_EXISTS;
+    }
+
+    new_root = bst_insert(*tree, value);
+    if (new_root == NULL)
+        return ERR_NULL_POINTER;
+    *tree = new_root;
+    return EXIT_SUCCESS;
+}
+
+int
+bst_fill(FILE *input_file,
          tree_node_t **tree)
 {
     int value;
 
     while (fscanf(input_file, "%d", &value) == 1)
-        *tree = insert_bst(*tree, value);
+        *tree = bst_insert(*tree, value);
 
     return *tree != NULL;
 }
@@ -190,7 +230,7 @@ bst_pop(tree_node_t **root,
     new_root = bst_remove(*root, value);
     if (new_root == NULL)
     {
-        fputs("Ошибка удаления элемента", stderr);
+        fputs("Ошибка удаления элемента в ДДП\n", stderr);
         return ERR_NULL_POINTER;
     }
 
@@ -220,7 +260,7 @@ fix_height(tree_node_t* node)
 }
 
 tree_node_t*
-rotate_right(tree_node_t* pivot) // поворот вправо вокруг pivot
+rotate_right(tree_node_t* pivot)
 {
     tree_node_t* new_root = pivot->left;
     pivot->left = new_root->right;
@@ -231,7 +271,7 @@ rotate_right(tree_node_t* pivot) // поворот вправо вокруг piv
 }
 
 tree_node_t*
-rotate_left(tree_node_t* pivot) // поворот влево вокруг pivot
+rotate_left(tree_node_t* pivot)
 {
     tree_node_t* new_root = pivot->right;
     pivot->right = new_root->left;
@@ -242,7 +282,7 @@ rotate_left(tree_node_t* pivot) // поворот влево вокруг pivot
 }
 
 tree_node_t*
-balance(tree_node_t* node) // балансировка узла node
+balance(tree_node_t* node)
 {
     fix_height(node);
 
@@ -260,11 +300,11 @@ balance(tree_node_t* node) // балансировка узла node
         return rotate_right(node);
     }
 
-    return node; // балансировка не нужна
+    return node;
 }
 
 tree_node_t*
-insert_avl(tree_node_t *tree,
+avl_insert(tree_node_t *tree,
            int value)
 {
     int cmp;
@@ -274,27 +314,48 @@ insert_avl(tree_node_t *tree,
     {
         new_root = new_node(value);
         if (new_root == NULL)
-            fputs("Ошибка выделения памяти под новый узел АВЛ дерева", stderr);
+            fputs("Ошибка выделения памяти под новый узел АВЛ дерева\n", stderr);
         return new_root;
     }
 
     cmp = compare_int(value, tree->value);
     if (cmp == 0)
-        abort();
+        return tree;
+        // abort();
     else if (cmp > 0)
-        tree->right = insert_avl(tree->right, value);
+        tree->right = avl_insert(tree->right, value);
     else
-        tree->left = insert_avl(tree->left, value);
+        tree->left = avl_insert(tree->left, value);
 
     new_root = balance(tree);
-
-    printf("val2: %d\n", new_root->value);
 
     return new_root;
 }
 
 int
-fill_avl(FILE *input_file,
+avl_push(tree_node_t **tree,
+         int value)
+{
+    tree_node_t *new_root;
+
+    if (find_node(*tree, value) != NULL)
+    {
+        fputs("Узел с таким значением уже существует\n", stderr);
+        return ERR_ALREADY_EXISTS;
+    }
+
+    new_root = avl_insert(*tree, value);
+    if (new_root == NULL)
+    {
+        fputs("Ошибка заполнения АВЛ дерева\n", stderr);
+        return ERR_NULL_POINTER;
+    }
+    *tree = new_root;
+    return EXIT_SUCCESS;
+}
+
+int
+avl_fill(FILE *input_file,
          tree_node_t **tree)
 {
     char raw_str[100];
@@ -306,21 +367,19 @@ fill_avl(FILE *input_file,
         value = strtol(raw_str, &end_pointer, 10);
         if (*end_pointer != '\n')
         {
-            fputs("Ошибка считывания значения нового узла дерева", stderr);
+            fputs("Ошибка считывания значения нового узла АВЛ дерева\n", stderr);
             return ERR_READING_VALUE;
         }
         if (raw_str[0] == '\n')
             return EXIT_SUCCESS;
-        // sscanf(raw_str, "%d", value);
-        printf("scanned: %d\n", value);
-        *tree = insert_avl(*tree, value);
+        *tree = avl_insert(*tree, value);
     }
 
     return tree != NULL;
 }
 
 tree_node_t *
-remove_min(tree_node_t *tree) // удаление узла с минимальным ключом из дерева p
+remove_min(tree_node_t *tree)
 {
     if (tree->left == NULL)
         return tree->right;
@@ -363,7 +422,7 @@ avl_pop(tree_node_t **root,
     new_root = avl_remove(*root, value);
     if (new_root == NULL)
     {
-        fputs("Ошибка удаления элемента", stderr);
+        fputs("Ошибка удаления элемента в АВЛ дереве\n", stderr);
         return ERR_NULL_POINTER;
     }
 

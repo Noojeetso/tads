@@ -4,7 +4,7 @@ void
 print_menu()
 {
     puts("Главное меню:");
-    puts("0. Выход\n");
+    puts("0. Выход");
     puts("1. Загрузить числа из файла в АВЛ дерево и в ДДП");
     puts("2. Вывести ДДП");
     puts("3. Вывести АВЛ дерево");
@@ -88,23 +88,26 @@ menu_loop()
             case 0:
                 break;
             case 1:
-                file = fopen("in.txt", "r");
+                free_tree(&avl);
+                free_tree(&bst);
+
+                file = fopen(DATABASE_FILENAME, READ_MODE);
                 if (file == NULL)
                 {
                     fputs("Ошибка открытия файла на чтение\n", stderr);
                     return ERR_OPEN_FILE;
                 }
 
-                fill_avl(file, &avl);
+                avl_fill(file, &avl);
                 if (rc != EXIT_SUCCESS)
                 {
                     fclose(file);
                     return rc;
                 }
 
-                rewind(file);
+                fseek(file, 0, SEEK_SET);
 
-                fill_bst(file, &bst);
+                bst_fill(file, &bst);
                 if (rc != EXIT_SUCCESS)
                 {
                     fclose(file);
@@ -112,44 +115,60 @@ menu_loop()
                 }
 
                 fclose(file);
+
                 break;
             case 2:
                 rc = tree_to_dot("bst_tree.dot", bst);
                 if (rc != EXIT_SUCCESS)
-                    fputs("Ошибка при записи в файл", stderr);
-                else
-                {
-                    rc = dot_to_svg("bst_tree.dot", "bst_tree.svg");
-                    if (rc != EXIT_SUCCESS)
-                        return rc;
-                    rc = open_svg("bst_tree.svg");
-                    if (rc != EXIT_SUCCESS)
-                        return rc;
-                }
+                    break;
+
+                rc = dot_to_svg("bst_tree.dot", "bst_tree.svg");
+                if (rc != EXIT_SUCCESS)
+                    return rc;
+
+                rc = open_svg("bst_tree.svg");
+                if (rc != EXIT_SUCCESS)
+                    break;
+
                 break;
             case 3:
                 rc = tree_to_dot("avl_tree.dot", avl);
                 if (rc != EXIT_SUCCESS)
-                    fputs("Ошибка при записи в файл", stderr);
-                else
-                {
-                    rc = dot_to_svg("avl_tree.dot", "avl_tree.svg");
-                    if (rc != EXIT_SUCCESS)
-                        break;
-                    rc = open_svg("avl_tree.svg");
-                    if (rc != EXIT_SUCCESS)
-                        break;
-                }
+                    break;
+
+                rc = dot_to_svg("avl_tree.dot", "avl_tree.svg");
+                if (rc != EXIT_SUCCESS)
+                    break;
+
+                rc = open_svg("avl_tree.svg");
+                if (rc != EXIT_SUCCESS)
+                    break;
+
                 break;
             case 4:
-                rc = fill_avl(stdin, &avl);
+                rc = scan_int(&value, -10000, 10000);
                 if (rc != EXIT_SUCCESS)
-                    fputs("Ошибка заполнения АВЛ дерева", stderr);
+                    break;
+                print_newline();
+
+                rc = avl_push(&avl, value);
+                if (rc != EXIT_SUCCESS)
+                    break;
+
+                rc = bst_push(&bst, value);
+                if (rc != EXIT_SUCCESS)
+                    break;
+
+                rc = file_push(DATABASE_FILENAME, value);
+                if (rc != EXIT_SUCCESS)
+                    break;
+
                 break;
             case 5:
                 rc = scan_int(&value, -10000, 10000);
                 if (rc != EXIT_SUCCESS)
                     break;
+                print_newline();
 
                 rc = avl_pop(&avl, value);
                 if (rc != EXIT_SUCCESS)
@@ -159,18 +178,18 @@ menu_loop()
                 if (rc != EXIT_SUCCESS)
                     break;
 
-                break;
-                /*
-                rc = file_pop(bst, value);
+                rc = file_pop(DATABASE_FILENAME, value);
                 if (rc != EXIT_SUCCESS)
                     break;
-                */
+
+                break;
             case 7:
                 print_heights(avl, bst);
                 break;
             default:
                 fprintf(stderr, "Ожидалась цифра в пределах от %d до %d\n\n", MIN_MENU_KEY, MAX_MENU_KEY);
         }
+        print_newline();
 
         flush_input();
     }

@@ -1,6 +1,7 @@
 #ifndef __GRAPHVIZ_H__
 #define __GRAPHVIZ_H__
 
+#include "files.h"
 #include "tree.h"
 
 int
