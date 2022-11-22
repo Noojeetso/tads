@@ -6,6 +6,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <time.h>
 #include "presets.h"
 #include "errors.h"
 
@@ -23,18 +24,26 @@ new_node(int value);
 void
 free_tree(tree_node_t **tree);
 
-int
+void
 print_heights(tree_node_t *avl,
               tree_node_t *bst);
+
+tree_node_t *
+find_node(tree_node_t *tree,
+          int value);
+
+void
+tree_search(tree_node_t *tree,
+            int value);
 
 int
 bst_push(tree_node_t **tree,
          int value);
-/*
+
 tree_node_t*
 bst_insert(tree_node_t *tree,
            int value);
-*/
+
 int
 bst_fill(FILE *input_file,
          tree_node_t **tree);

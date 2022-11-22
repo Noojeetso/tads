@@ -44,6 +44,8 @@ tree_to_dot(char *file_name,
     int rc;
     FILE *output_file;
 
+    puts("Преобразование дерева в .dot файл...");
+
     if (tree == NULL)
     {
         fputs("Дерево не имеет ни одного узла\n", stderr);
@@ -56,8 +58,6 @@ tree_to_dot(char *file_name,
         fputs("Ошибка при открытии файла на запись\n", stderr);
         return ERR_OPEN_FILE;
     }
-
-    printf("val1: %d\n", tree->value);
 
     // rc = fputs("{{{\n", output_file);
     // rc = fputs("#!graphviz\n", output_file);
@@ -101,6 +101,8 @@ dot_to_svg(char *input_file_name,
 {
     int rc;
 
+    puts("Преобразование .dot в .svg файл...");
+
     if (fork() == 0)
     {
         rc = execlp("dot", "dot", "-Tsvg", input_file_name, "-o", output_file_name, NULL);
@@ -119,6 +121,8 @@ open_svg(char *input_file_name)
 {
     int rc;
     FILE *dev_null;
+
+    puts("Открытие .svg файла...");
 
     if (fork() == 0)
     {

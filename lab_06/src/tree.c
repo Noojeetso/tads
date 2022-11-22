@@ -71,7 +71,7 @@ find_node(tree_node_t *tree,
     if (result_node != NULL)
         return result_node;
 
-    result_node = find_node(tree->left, value);
+    result_node = find_node(tree->right, value);
     if (result_node != NULL)
         return result_node;
 
@@ -79,40 +79,100 @@ find_node(tree_node_t *tree,
 }
 
 void
-count_avl_nodes(tree_node_t *tree,
-                void *count_array)
+tree_search(tree_node_t *tree,
+            int value)
+{
+    tree_node_t *node;
+    clock_t start, end;
+    start = clock();
+    node = find_node(tree, value);
+    end = clock();
+    if (node == NULL)
+        puts("Элемент не найден");
+    else
+        printf("Элемент найден: %d\n", node->value);
+    printf("Затрачено времени: %lu мкс\n", (end - start) / (CLOCKS_PER_SEC / 1000000));
+}
+
+
+void
+avl_count_heights(tree_node_t *tree,
+                  void *count_array)
 {
     ((int *)count_array)[tree->height]++;
 }
 
-int
-count_height(tree_node_t *tree)
+void
+count_nodes_amount(tree_node_t *tree,
+                   void *count)
 {
-    return 0;
+    *((int *)count) += 1;
 }
 
 int
+bst_count_heights(tree_node_t *tree,
+                  int *heights,
+                  int height)
+{
+    int left_height;
+    int right_height;
+
+    if (tree == NULL)
+        return 1;
+
+    left_height = bst_count_heights(tree->left, heights, height);
+    right_height = bst_count_heights(tree->right, heights, height);
+
+    height = left_height > right_height ? left_height : right_height;
+    heights[height]++;
+
+    return height + 1;
+}
+
+void
 print_heights(tree_node_t *avl,
               tree_node_t *bst)
 {
-    // printf("avl height: %d\n", avl->right->height);
-    int *avl_nodes = calloc(avl->height + 1, sizeof(int));
-    int *bst_nodes = calloc(avl->height + 1, sizeof(int));
+    int bst_max_height = 0;
+    int *avl_nodes;
+    int *bst_nodes;
+    int bst_height;
 
-    tree_apply(avl, count_avl_nodes, avl_nodes);
-    // tree_apply(bst, count_bst_nodes, bst_nodes);
+    avl_nodes = calloc(avl->height + 1, sizeof(int));
+    tree_apply(bst, count_nodes_amount, &bst_max_height);
+    bst_nodes = calloc(bst_max_height + 1, sizeof(int));
+
+    tree_apply(avl, avl_count_heights, avl_nodes);
+    bst_count_heights(bst, bst_nodes, 0);
+
+    for (bst_height = bst_max_height; bst_height > 0; bst_height--)
+        if (bst_nodes[bst_height] != 0)
+            break;
 
     puts("АВЛ дерево:");
-    puts("\tВысота\tКоличество");
+    puts("\tВысота\tКоличество узлов");
     for (size_t i = avl->height; i > 0; i--)
         printf("\t%lu\t%d\n", i, avl_nodes[i]);
 
-    puts("ДДП:");
-    puts("\tВысота\tКоличество");
-    for (size_t i = bst->height; i > 0; i--)
+    puts("\nДвоичное дерево поиска:");
+    puts("\tВысота\tКоличество узлов");
+    for (size_t i = bst_height; i > 0; i--)
         printf("\t%lu\t%d\n", i, bst_nodes[i]);
 
-    return EXIT_SUCCESS;
+    free(avl_nodes);
+    free(bst_nodes);
+}
+
+tree_node_t*
+find_max_node(tree_node_t *tree)
+{
+    return tree->right != NULL ? find_max_node(tree->right) : tree;
+}
+
+tree_node_t *
+find_min_node(tree_node_t *tree)
+{
+    return tree->left != NULL ? find_min_node(tree->left) : tree;
 }
 
 // Функции для ДДП
@@ -166,24 +226,24 @@ int
 bst_fill(FILE *input_file,
          tree_node_t **tree)
 {
+    char raw_str[100];
+    char *end_pointer;
     int value;
 
-    while (fscanf(input_file, "%d", &value) == 1)
+    while (fgets(raw_str, 100, input_file) != NULL)
+    {
+        value = strtol(raw_str, &end_pointer, 10);
+        if (*end_pointer != '\n')
+        {
+            fputs("Ошибка считывания значения нового узла АВЛ дерева\n", stderr);
+            return ERR_READING_VALUE;
+        }
+        if (raw_str[0] == '\n')
+            return EXIT_SUCCESS;
         *tree = bst_insert(*tree, value);
+    }
 
-    return *tree != NULL;
-}
-
-tree_node_t*
-find_max_node(tree_node_t *tree)
-{
-    return tree->right != NULL ? find_max_node(tree->right) : tree;
-}
-
-tree_node_t *
-find_min_node(tree_node_t *tree)
-{
-    return tree->left != NULL ? find_min_node(tree->left) : tree;
+    return tree != NULL;
 }
 
 tree_node_t *

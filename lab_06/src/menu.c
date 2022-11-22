@@ -88,8 +88,12 @@ menu_loop()
             case 0:
                 break;
             case 1:
+                puts("Очистка АВЛ дерева...");
                 free_tree(&avl);
+                puts("Очистка ДДП...");
                 free_tree(&bst);
+
+                puts("Открытие файла на чтение...");
 
                 file = fopen(DATABASE_FILENAME, READ_MODE);
                 if (file == NULL)
@@ -98,55 +102,62 @@ menu_loop()
                     return ERR_OPEN_FILE;
                 }
 
+                puts("Запись в АВЛ дерево...");
+
                 avl_fill(file, &avl);
                 if (rc != EXIT_SUCCESS)
                 {
+                    puts("Закрытие файла...");
                     fclose(file);
                     return rc;
                 }
 
                 fseek(file, 0, SEEK_SET);
 
+                puts("Запись в ДДП...");
+
                 bst_fill(file, &bst);
                 if (rc != EXIT_SUCCESS)
                 {
+                    puts("Закрытие файла...");
                     fclose(file);
                     return rc;
                 }
 
+                puts("Закрытие файла...");
                 fclose(file);
 
                 break;
             case 2:
-                rc = tree_to_dot("bst_tree.dot", bst);
+                rc = tree_to_dot("out/bst_tree.dot", bst);
                 if (rc != EXIT_SUCCESS)
                     break;
 
-                rc = dot_to_svg("bst_tree.dot", "bst_tree.svg");
+                rc = dot_to_svg("out/bst_tree.dot", "out/bst_tree.svg");
                 if (rc != EXIT_SUCCESS)
                     return rc;
 
-                rc = open_svg("bst_tree.svg");
+                rc = open_svg("out/bst_tree.svg");
                 if (rc != EXIT_SUCCESS)
                     break;
 
                 break;
             case 3:
-                rc = tree_to_dot("avl_tree.dot", avl);
+                rc = tree_to_dot("out/avl_tree.dot", avl);
                 if (rc != EXIT_SUCCESS)
                     break;
 
-                rc = dot_to_svg("avl_tree.dot", "avl_tree.svg");
+                rc = dot_to_svg("out/avl_tree.dot", "out/avl_tree.svg");
                 if (rc != EXIT_SUCCESS)
                     break;
 
-                rc = open_svg("avl_tree.svg");
+                rc = open_svg("out/avl_tree.svg");
                 if (rc != EXIT_SUCCESS)
                     break;
 
                 break;
             case 4:
-                rc = scan_int(&value, -10000, 10000);
+                rc = scan_int(&value, INT_MIN, INT_MAX);
                 if (rc != EXIT_SUCCESS)
                     break;
                 print_newline();
@@ -165,7 +176,7 @@ menu_loop()
 
                 break;
             case 5:
-                rc = scan_int(&value, -10000, 10000);
+                rc = scan_int(&value, INT_MIN, INT_MAX);
                 if (rc != EXIT_SUCCESS)
                     break;
                 print_newline();
@@ -183,8 +194,28 @@ menu_loop()
                     break;
 
                 break;
+            case 6:
+                rc = scan_int(&value, INT_MIN, INT_MAX);
+                if (rc != EXIT_SUCCESS)
+                    break;
+                print_newline();
+
+                puts("Поиск элемента в АВЛ дереве...");
+                tree_search(avl, value);
+                print_newline();
+
+                puts("Поиск элемента в двоичном дереве поиска...");
+                tree_search(bst, value);
+                print_newline();
+
+                puts("Поиск элемента в файле...");
+                file_search(DATABASE_FILENAME, value);
+                break;
             case 7:
                 print_heights(avl, bst);
+                break;
+            case 8:
+                print_efficiency();
                 break;
             default:
                 fprintf(stderr, "Ожидалась цифра в пределах от %d до %d\n\n", MIN_MENU_KEY, MAX_MENU_KEY);
