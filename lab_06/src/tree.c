@@ -1,5 +1,7 @@
 #include "tree.h"
 
+int search_compares = 0;
+
 int
 compare_int(int first,
             int second)
@@ -62,18 +64,18 @@ tree_node_t *
 find_node(tree_node_t *tree,
           int value)
 {
-    tree_node_t *result_node;
+    tree_node_t *result_node = tree;
 
-    if (tree == NULL || tree->value == value)
-        return tree;
-
-    result_node = find_node(tree->left, value);
-    if (result_node != NULL)
-        return result_node;
-
-    result_node = find_node(tree->right, value);
-    if (result_node != NULL)
-        return result_node;
+    while (result_node != NULL)
+    {
+        if (result_node->value > value)
+            result_node = result_node->left;
+        else if (result_node->value < value)
+            result_node = result_node->right;
+        else
+            return result_node;
+        search_compares++;
+    }
 
     return NULL;
 }

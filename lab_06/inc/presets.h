@@ -1,7 +1,7 @@
 #ifndef __PRESETS_H__
 #define __PRESETS_H__
 
-#define DATABASE_FILENAME "database/numbers.txt"
+#define DATABASE_FILENAME "database/numbers_small.txt"
 #define MAIN_STACK_SIZE 50
 
 #define MIN_MENU_KEY 0

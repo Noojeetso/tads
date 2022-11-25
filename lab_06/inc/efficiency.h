@@ -6,7 +6,7 @@
 #include "files.h"
 #include "print.h"
 
-#define ITERATIONS 1
+#define ITERATIONS 10
 #define SMALL_FILE_NAME "database/numbers_small.txt"
 #define MEDIUM_FILE_NAME "database/numbers_medium.txt"
 #define BIG_FILE_NAME "database/numbers_big.txt"

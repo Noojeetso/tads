@@ -22,6 +22,7 @@ void
 free_array(array_t *array)
 {
     free(array->data);
+    free(array);
 }
 
 size_t
