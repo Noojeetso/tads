@@ -1,7 +1,5 @@
 #include "tree.h"
 
-int search_compares = 0;
-
 int
 compare_int(int first,
             int second)
@@ -74,7 +72,6 @@ find_node(tree_node_t *tree,
             result_node = result_node->right;
         else
             return result_node;
-        search_compares++;
     }
 
     return NULL;
@@ -298,6 +295,20 @@ bst_pop(tree_node_t **root,
 
     *root = new_root;
     return EXIT_SUCCESS;
+}
+
+void
+tree_sort(tree_node_t *tree,
+          int *array,
+          int *index)
+{
+    if (tree != NULL)
+    {
+        tree_sort(tree->left, array, index);
+        array[*index] = tree->value;
+        (*index)++;
+        tree_sort(tree->right, array, index);
+    }
 }
 
 // Функции для АВЛ деревьев

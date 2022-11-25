@@ -52,6 +52,11 @@ int
 bst_pop(tree_node_t **root,
         int value);
 
+void
+tree_sort(tree_node_t *tree,
+          int *array,
+          int *index);
+
 tree_node_t*
 avl_insert(tree_node_t *tree,
            int value);
