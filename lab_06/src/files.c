@@ -84,17 +84,17 @@ int
 file_search(char *file_name,
             int value)
 {
-    clock_t start, end;
+    // clock_t start, end;
     size_t found_index;
     array_t *array;
     int rc;
 
-    start = clock();
+    // start = clock();
     array = file_to_array(file_name);
     if (array == NULL)
         return ERR_NULL_POINTER;
     rc = array_search_number(array, value, &found_index);
-    end = clock();
+    // end = clock();
 
     if (rc != EXIT_SUCCESS)
         puts("Элемент не найден");
@@ -103,7 +103,7 @@ file_search(char *file_name,
 
     free_array(array);
 
-    printf("Затрачено времени: %lu мкс\n", (end - start) / (CLOCKS_PER_SEC / 1000000));
+    // printf("Затрачено времени: %lu мкс\n", (end - start) / (CLOCKS_PER_SEC / 1000000));
 
     return EXIT_SUCCESS;
 }

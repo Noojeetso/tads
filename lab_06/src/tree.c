@@ -78,21 +78,52 @@ find_node(tree_node_t *tree,
 }
 
 void
+get_tree_size(tree_node_t *tree,
+              int *tree_size)
+{
+    if (tree == NULL)
+        return;
+    (*tree_size)++;
+    get_tree_size(tree->left, tree_size);
+    get_tree_size(tree->right, tree_size);
+}
+
+void
+get_tree_non_leafs(tree_node_t *tree,
+               int *tree_leafs)
+{
+    if (tree == NULL)
+        return;
+    if (tree->left != NULL || tree->right != NULL)
+        (*tree_leafs)++;
+    get_tree_non_leafs(tree->left, tree_leafs);
+    get_tree_non_leafs(tree->right, tree_leafs);
+}
+
+double
+get_tree_factor(tree_node_t *tree)
+{
+    int tree_non_roots = 0;
+    int tree_non_leafs = 0;
+
+    get_tree_non_leafs(tree, &tree_non_leafs);
+    get_tree_size(tree, &tree_non_roots);
+    tree_non_roots--;
+
+    return ((double)tree_non_roots) / tree_non_leafs;
+}
+
+void
 tree_search(tree_node_t *tree,
             int value)
 {
     tree_node_t *node;
-    clock_t start, end;
-    start = clock();
     node = find_node(tree, value);
-    end = clock();
     if (node == NULL)
         puts("Элемент не найден");
     else
         printf("Элемент найден: %d\n", node->value);
-    printf("Затрачено времени: %lu мкс\n", (end - start) / (CLOCKS_PER_SEC / 1000000));
 }
-
 
 void
 avl_count_heights(tree_node_t *tree,
@@ -108,24 +139,18 @@ count_nodes_amount(tree_node_t *tree,
     *((int *)count) += 1;
 }
 
-int
-bst_count_heights(tree_node_t *tree,
+void
+count_heights(tree_node_t *tree,
                   int *heights,
                   int height)
 {
-    int left_height;
-    int right_height;
-
     if (tree == NULL)
-        return 1;
+        return;
 
-    left_height = bst_count_heights(tree->left, heights, height);
-    right_height = bst_count_heights(tree->right, heights, height);
-
-    height = left_height > right_height ? left_height : right_height;
     heights[height]++;
 
-    return height + 1;
+    count_heights(tree->left, heights, height + 1);
+    count_heights(tree->right, heights, height + 1);
 }
 
 void
@@ -137,12 +162,18 @@ print_heights(tree_node_t *avl,
     int *bst_nodes;
     int bst_height;
 
+    if (avl == NULL || bst == NULL)
+    {
+        fputs("Одно или оба дерева не существуют\n", stderr);
+        return;
+    }
+
     avl_nodes = calloc(avl->height + 1, sizeof(int));
     tree_apply(bst, count_nodes_amount, &bst_max_height);
     bst_nodes = calloc(bst_max_height + 1, sizeof(int));
 
-    tree_apply(avl, avl_count_heights, avl_nodes);
-    bst_count_heights(bst, bst_nodes, 0);
+    count_heights(avl, avl_nodes, 0);
+    count_heights(bst, bst_nodes, 0);
 
     for (bst_height = bst_max_height; bst_height > 0; bst_height--)
         if (bst_nodes[bst_height] != 0)
@@ -150,13 +181,13 @@ print_heights(tree_node_t *avl,
 
     puts("АВЛ дерево:");
     puts("\tВысота\tКоличество узлов");
-    for (size_t i = avl->height; i > 0; i--)
-        printf("\t%lu\t%d\n", i, avl_nodes[i]);
+    for (size_t i = 0; i < avl->height; i++)
+        printf("\t%lu\t%d\n", i + 1, avl_nodes[i]);
 
     puts("\nДвоичное дерево поиска:");
     puts("\tВысота\tКоличество узлов");
-    for (size_t i = bst_height; i > 0; i--)
-        printf("\t%lu\t%d\n", i, bst_nodes[i]);
+    for (size_t i = 0; i <= bst_height; i++)
+        printf("\t%lu\t%d\n", i + 1, bst_nodes[i]);
 
     free(avl_nodes);
     free(bst_nodes);

@@ -24,6 +24,9 @@ new_node(int value);
 void
 free_tree(tree_node_t **tree);
 
+double
+get_tree_factor(tree_node_t *tree);
+
 void
 print_heights(tree_node_t *avl,
               tree_node_t *bst);

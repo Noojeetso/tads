@@ -13,56 +13,52 @@ compare_integer(const void *a_ptr,
 }
 
 void
-print_table(size_t *avl_results,
-            size_t *bst_results,
-            size_t *file_results,
-            int offset)
+print_structs(size_t *avl_results,
+              size_t *bst_results,
+              size_t *file_results,
+              int index)
 {
-    puts("Маленький файл");
-    printf("АВЛ дерево:\t\t%lu\n", avl_results[offset]);
-    printf("Двоичное дерево поиска:\t%lu\n", bst_results[offset]);
-    printf("Файл:\t\t\t%lu\n", file_results[offset]);
-    print_newline();
-    puts("Средний файл");
-    printf("АВЛ дерево:\t\t%lu\n", avl_results[2 + offset]);
-    printf("Двоичное дерево поиска:\t%lu\n", bst_results[2 + offset]);
-    printf("Файл:\t\t\t%lu\n", file_results[2 + offset]);
-    print_newline();
-    puts("Большой файл");
-    printf("АВЛ дерево:\t\t%lu\n", avl_results[4 + offset]);
-    printf("Двоичное дерево поиска:\t%lu\n", bst_results[4 + offset]);
-    printf("Файл:\t\t\t%lu\n", file_results[4 + offset]);
-    print_newline();
-    puts("Отсортированный файл");
-    printf("АВЛ дерево:\t\t%lu\n", avl_results[6 + offset]);
-    printf("Двоичное дерево поиска:\t%lu\n", bst_results[6 + offset]);
-    printf("Файл:\t\t\t%lu\n", file_results[6 + offset]);
-    print_newline();
-    puts("Файл, отсортированный в обратном порядке");
-    printf("АВЛ дерево:\t\t%lu\n", avl_results[8 + offset]);
-    printf("Двоичное дерево поиска:\t%lu\n", bst_results[8 + offset]);
-    printf("Файл:\t\t\t%lu\n", file_results[8 + offset]);
+    printf("АВЛ дерево:\t\t%lu\n", avl_results[index]);
+    printf("Двоичное дерево поиска:\t%lu\n", bst_results[index]);
+    printf("Массив на основе файла:\t%lu\n", file_results[index]);
 }
 
 void
-print_results(size_t *avl_results,
-              size_t *bst_results,
-              size_t *file_results)
+print_results(results_t *results)
 {
+    char *file_names[] = {"Маленький файл", "Средний файл",
+                          "Большой файл", "Отсортированный файл",
+                          "Файл, отсортированный в обратном порядке"};
+    print_newline();
     print_newline();
     puts("Сортировка");
-    puts("Затрачено времени в микросекундах:");
-    print_newline();
-    print_table(avl_results, bst_results, file_results, 0);
+    for (size_t i = 0; i < sizeof(file_names) / sizeof(file_names[0]); i++)
+    {
+        puts(file_names[i]);
+        print_structs(results->avl_sort, results->bst_sort, results->file_sort, i);
+        print_newline();
+    }
     print_newline();
     puts("Поиск");
-    puts("Произведено сравнений:");
+    for (size_t i = 0; i < sizeof(file_names) / sizeof(file_names[0]); i++)
+    {
+        puts(file_names[i]);
+        print_structs(results->avl_sort, results->bst_sort, results->file_sort, i);
+        print_newline();
+    }
     print_newline();
-    print_table(avl_results, bst_results, file_results, 1);
+    puts("Коэффициент ветвления деревьев:");
+    for (size_t i = 0; i < sizeof(file_names) / sizeof(file_names[0]); i++)
+    {
+        puts(file_names[i]);
+        printf("АВЛ дерево: %.3lf\n", results->avl_factors[i]);
+        printf("ДДП: %.3lf\n", results->bst_factors[i]);
+        print_newline();
+    }
     print_newline();
     printf("Размер узла дерева в байтах: %lu\n", sizeof(tree_node_t));
-    printf("Размер элемента массива в байтах: %lu\n", sizeof(int));
     printf("Размер структуры массива в байтах: %lu\n", sizeof(array_t));
+    printf("Размер элемента массива в байтах: %lu\n", sizeof(int));
 }
 
 void
@@ -73,9 +69,7 @@ print_efficiency(void)
     tree_node_t *bst = NULL;
     FILE *file;
     array_t *array;
-    size_t avl_results[10] = {0};
-    size_t bst_results[10] = {0};
-    size_t file_results[10] = {0};
+    results_t results = {0};
     const char *file_names[] = {SMALL_FILE_NAME, MEDIUM_FILE_NAME,
                                 BIG_FILE_NAME, SORTED_FILE_NAME,
                                 SORTED_REVERSE_FILE_NAME};
@@ -83,10 +77,10 @@ print_efficiency(void)
     size_t search_compares;
     int *sorted_array;
     int sort_index;
-    int value;
     size_t elements_amount;
     int values[ITERATIONS];
 
+    // Генерация чисел для поиска
     for (int i = 0; i < ITERATIONS; i++)
         values[i] = rand();
 
@@ -101,59 +95,47 @@ print_efficiency(void)
             array = file_to_array(file_names[name_id]);
             qsort(array->data, array->size, sizeof(int), compare_integer);
             end = clock();
-            file_results[2 * name_id] += (end - start) / (CLOCKS_PER_SEC / 1000000);
+            results.file_sort[name_id] += (end - start) / (CLOCKS_PER_SEC / 1000000);
             fseek(file, 0, SEEK_SET);
+            elements_amount = array->size;
+            if (i == 0)
+                printf("Элементов в файле: %lu\n", elements_amount);
+            // Нормализация числа для поиска
+            values[i] %= elements_amount / 2;
             free_array(array);
 
             // Подсчёт количества сравнений при поиске элемента в массиве
             array = file_to_array(file_names[name_id]);
             for (search_compares = 0; search_compares < array->size; search_compares++)
-                if (array->data[search_compares] == value)
+                if (array->data[search_compares] == values[i])
                     break;
-            file_results[2 * name_id + 1] += search_compares;
-            elements_amount = array->size;
+            results.file_search[name_id] += search_compares;
             fseek(file, 0, SEEK_SET);
             free_array(array);
 
-            if (i == 0)
-                printf("Элементов в файле: %lu\n", elements_amount);
-            values[i] %= elements_amount / 2;
-
-            // Замер времени создания АВЛ дерева в мкс
-            start = clock();
-            while (fscanf(file, "%d", &value) == 1)
-                avl = avl_insert(avl, value);
-            end = clock();
-            avl_results[2 * name_id] += (end - start) / (CLOCKS_PER_SEC / 1000000);
-            fseek(file, 0, SEEK_SET);
-
-            // Замер времени создания ДДП в мкс
+            // Замер времени сортировки массива с помощью АВЛ дерева в мкс
             start = clock();
             sorted_array = malloc(elements_amount * sizeof(int));
-            while (fscanf(file, "%d", &value) == 1)
-                bst = bst_insert(bst, value);
             sort_index = 0;
-            tree_sort(bst, sorted_array, &sort_index);
+            avl_fill(file, &avl);
+            tree_sort(avl, sorted_array, &sort_index);
             end = clock();
-            bst_results[2 * name_id] += (end - start) / (CLOCKS_PER_SEC / 1000000);
+            results.avl_sort[name_id] += (end - start) / (CLOCKS_PER_SEC / 1000000);
+            results.avl_factors[name_id] += get_tree_factor(avl);
             fseek(file, 0, SEEK_SET);
             free(sorted_array);
 
-            // Подсчёт количества сравнений при поиске элемента в ДДП
-            search_compares = 0;
-            result_node = bst;
-            while (result_node != NULL)
-            {
-                if (result_node->value > values[i])
-                    result_node = result_node->left;
-                else if (result_node->value < values[i])
-                    result_node = result_node->right;
-                else
-                    break;
-                search_compares++;
-            }
-            bst_results[2 * name_id + 1] += search_compares;
-            free_tree(&bst);
+            // Замер времени сортировки массива с помощью ДДП в мкс
+            start = clock();
+            sorted_array = malloc(elements_amount * sizeof(int));
+            sort_index = 0;
+            bst_fill(file, &bst);
+            tree_sort(bst, sorted_array, &sort_index);
+            end = clock();
+            results.bst_sort[name_id] += (end - start) / (CLOCKS_PER_SEC / 1000000);
+            results.bst_factors[name_id] += get_tree_factor(bst);
+            fseek(file, 0, SEEK_SET);
+            free(sorted_array);
 
             // Подсчёт количества сравнений при поиске элемента в АВЛ дереве
             search_compares = 0;
@@ -168,19 +150,37 @@ print_efficiency(void)
                     break;
                 search_compares++;
             }
-            avl_results[2 * name_id + 1] += search_compares;
+            results.avl_search[name_id] += search_compares;
             free_tree(&avl);
+
+            // Подсчёт количества сравнений при поиске элемента в ДДП
+            search_compares = 0;
+            result_node = bst;
+            while (result_node != NULL)
+            {
+                if (result_node->value > values[i])
+                    result_node = result_node->left;
+                else if (result_node->value < values[i])
+                    result_node = result_node->right;
+                else
+                    break;
+                search_compares++;
+            }
+            results.bst_search[name_id] += search_compares;
+            free_tree(&bst);
         }
         fclose(file);
     }
 
     // Нахождение среднего всех значений
-    for (size_t i = 0; i < sizeof(avl_results) / sizeof(avl_results[0]); i++)
+    for (size_t i = 0; i < sizeof(file_names) / sizeof(file_names[0]); i++)
     {
-        avl_results[i] /= ITERATIONS;
-        bst_results[i] /= ITERATIONS;
-        file_results[i] /= ITERATIONS;
+        results.avl_sort[i] /= ITERATIONS;
+        results.bst_sort[i] /= ITERATIONS;
+        results.file_sort[i] /= ITERATIONS;
+        results.avl_factors[i] /= ITERATIONS;
+        results.bst_factors[i] /= ITERATIONS;
     }
 
-    print_results(avl_results, bst_results, file_results);
+    print_results(&results);
 }
