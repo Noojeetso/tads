@@ -10,6 +10,7 @@ list_stack_create(size_t max_size)
         return NULL;
     }
     new_list_stack->max_size = max_size;
+    new_list_stack->head = NULL;
 
     return new_list_stack;
 }
@@ -20,11 +21,12 @@ list_stack_clear(list_stack_t *stack)
     node_t *current;
     node_t *prev = stack->head;
 
-    while (prev->prev != NULL)
-    {
-        current = current->prev;
-        free(prev);
-    }
+    if (stack->head != NULL)
+        while (prev->prev != NULL)
+        {
+            current = current->prev;
+            free(prev);
+        }
 
     free(prev);
 }
