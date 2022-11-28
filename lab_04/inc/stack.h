@@ -1,16 +1,21 @@
 #ifndef __STACK_H__
 #define __STACK_H__
 
+#include <math.h>
+#include <limits.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "presets.h"
 #include "errors.h"
 
-typedef struct struct_array
+typedef struct array_stack
 {
     int *data;
     size_t max_size;
-    size_t top;
+    size_t size;
+    int (*push)(struct array_stack *list_stack, int value);
+    int (*pop)(struct array_stack *list_stack, int *value);
 } array_stack_t;
 
 typedef struct node node_t;
@@ -25,7 +30,9 @@ typedef struct list_stack
 {
     size_t max_size;
     size_t size;
-    node_t *head;
+    node_t *tail;
+    int (*push)(struct list_stack *list_stack, int value);
+    int (*pop)(struct list_stack *list_stack, int *value);
 } list_stack_t;
 
 typedef struct adress_array
@@ -54,6 +61,7 @@ is_array_stack_empty(array_stack_t *stack);
 int
 check_array_stack_empty(array_stack_t *stack);
 
+/*
 int
 array_stack_push_safe(array_stack_t *stack,
                       int value);
@@ -68,9 +76,13 @@ array_stack_pop_safe(array_stack_t *stack,
 
 int
 array_stack_pop(array_stack_t *stack);
+*/
 
 void
 array_stack_print(array_stack_t *stack);
+
+void
+array_stack_print_reversed_task(void);
 
 // LIST_STACK
 adress_array_t *
@@ -100,6 +112,7 @@ is_list_stack_full(list_stack_t *stack);
 int
 check_list_stack_full(list_stack_t *stack);
 
+/*
 int
 list_stack_push(list_stack_t *stack,
                 int value);
@@ -110,13 +123,20 @@ list_stack_pop(list_stack_t *stack);
 int
 list_stack_pop_safe(list_stack_t *stack,
                      int *value);
-
-int
-add_head_adress(list_stack_t *list_stack,
-                adress_array_t *adress_array);
+*/
 
 void
 list_stack_print(list_stack_t *stack);
 
-#endif  // __STACK_H__
+int
+add_tail_adress(adress_array_t *adress_array,
+                list_stack_t *list_stack);
 
+void
+remove_tail_adress(adress_array_t *adress_array,
+                   list_stack_t *list_stack);
+
+void
+print_adress_array(adress_array_t *adress_array);
+
+#endif  // __STACK_H__

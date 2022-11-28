@@ -11,4 +11,3 @@ void
 print_hyphen_line(int repeat);
 
 #endif  // __PRINT_H__
-

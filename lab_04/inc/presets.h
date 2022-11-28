@@ -11,5 +11,4 @@
 
 #define MAX(x, y) x > y ? x : y;
 
-#endif // __PRESETS_H__
-
+#endif  // __PRESETS_H__

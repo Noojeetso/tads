@@ -21,4 +21,3 @@
 #define ERR_NULL_POINTER 117;
 
 #endif // __ERRORS_H__
-

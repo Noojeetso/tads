@@ -10,7 +10,7 @@ OBJS := $(filter-out $(OUT_DIR)/main.o,$(OBJS))
 .PHONY : clean debug release gcov unit func create_out_dir add_libs
 
 app.exe : create_out_dir $(OBJS) $(OUT_DIR)/main.o
-	$(CC) $(CFLAGS) $(OBJS) $(OUT_DIR)/main.o -o $@
+	$(CC) $(CFLAGS) $(OBJS) $(OUT_DIR)/main.o -o $@ -lm
 
 func : gcov
 	./run_func_tests.sh
