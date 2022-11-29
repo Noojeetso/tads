@@ -2,6 +2,7 @@
 #define __EFFICIENCY_H__
 
 #include "stack.h"
+#include "print.h"
 #include <time.h>
 
 #define ITERATIONS 100

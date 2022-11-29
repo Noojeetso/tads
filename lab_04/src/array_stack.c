@@ -169,7 +169,6 @@ get_array_stack_reversed_sequence(int *input_array,
         stack->push(stack, value);
         previous_value = value;
     }
-    free(input_array);
 
     stack_size = stack->size;
     for (size_t i = 0; i < stack_size; i++)

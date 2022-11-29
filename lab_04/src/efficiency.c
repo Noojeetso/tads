@@ -4,13 +4,14 @@ void
 fill_random_numbers(int *random_numbers,
                     int max_size)
 {
-
+    for (size_t i = 0; i < max_size; i++)
+        random_numbers[i] = rand();
 }
 
 void
 print_memory_results(unsigned int max_size)
 {
-    printf("Количество занимаемой памяти для %d элемент(а, ов)\n", max_size);
+    printf("Количество занимаемой памяти (в байтах) для %d элемент(а, ов)\n", max_size);
     printf("Стеком на основе массива: %lu\n", sizeof(array_stack_t) + max_size * sizeof(int));
     printf("Стеком на основе списка: %lu\n", sizeof(list_stack_t) + max_size * sizeof(node_t));
 }
@@ -140,21 +141,13 @@ print_task_results(int max_size)
 
     for (size_t i = 0; i < ITERATIONS; i++)
     {
-        for (int j = 0; j < max_size; j++)
-            array_stack->push(array_stack, random_numbers[j]);
-
         start = clock();
-        for (int j = 0; j < max_size; j++)
-            array_stack->pop(array_stack, &random_numbers[j]);
+        get_array_stack_reversed_sequence(random_numbers, max_size);
         end = clock();
         time_array += (end - start) / (CLOCKS_PER_SEC / 1000000);
 
-        for (int j = 0; j < max_size; j++)
-            list_stack->push(list_stack, random_numbers[j]);
-
         start = clock();
-        for (int j = 0; j < max_size; j++)
-            list_stack->pop(list_stack, &random_numbers[j]);
+        get_list_stack_reversed_sequence(random_numbers, max_size);
         end = clock();
         time_list += (end - start) / (CLOCKS_PER_SEC / 1000000);
     }
@@ -175,7 +168,9 @@ void
 print_time_results(int max_size)
 {
     print_push_results(max_size);
+    print_newline();
     print_pop_results(max_size);
+    print_newline();
     print_task_results(max_size);
 }
 
@@ -185,15 +180,24 @@ print_results(void)
     int rc;
     int max_size;
 
-    puts("Введите количество обрабатываемых элементов для оценки эффективности работы стеков (от 1 до 5000): ");
+    puts("Введите количество обрабатываемых элементов для оценки эффективности работы стеков (от 1 до 10000): ");
 
-    rc = scanf("%d\n", &max_size);
-    if (rc != 1 || max_size < 1 || max_size > 5000)
+    rc = scanf("%d", &max_size);
+    if (rc != 1)
     {
         fputs("Ошибка считывания количества элементов\n", stderr);
         return;
     }
 
+    if (max_size < 1 || max_size > 10000)
+    {
+        fputs("Введённое число выходит из допустимого диапазона\n", stderr);
+        return;
+    }
+
+    print_newline();
     print_memory_results(max_size);
+    print_newline();
     print_time_results(max_size);
+    print_newline();
 }
