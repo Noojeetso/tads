@@ -59,8 +59,6 @@ tree_to_dot(char *file_name,
         return ERR_OPEN_FILE;
     }
 
-    // rc = fputs("{{{\n", output_file);
-    // rc = fputs("#!graphviz\n", output_file);
     rc = fputs("digraph test_tree {\n", output_file);
     if (rc == EOF)
     {
@@ -78,7 +76,6 @@ tree_to_dot(char *file_name,
     }
 
     rc = fputs("}\n", output_file);
-    // fputs("}}}\n", output_file);
 
     if (rc == EOF)
     {

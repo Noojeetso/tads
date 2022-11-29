@@ -13,4 +13,3 @@ print_hyphen_line(int repeat)
         putc('-', stdout);
     putc('\n', stdout);
 }
-

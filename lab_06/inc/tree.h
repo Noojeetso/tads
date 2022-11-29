@@ -3,10 +3,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <termios.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <time.h>
 #include "presets.h"
 #include "errors.h"
 
@@ -72,15 +68,8 @@ int
 avl_fill(FILE *input_file,
          tree_node_t **tree);
 
-
-/*
-tree_node_t *
-avl_remove(tree_node_t *root,
-           int value);
-*/
 int
 avl_pop(tree_node_t **root,
         int value);
 
 #endif  // __TREE_H__
-

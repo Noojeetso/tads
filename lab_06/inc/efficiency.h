@@ -2,6 +2,7 @@
 #define __EFFICIENCY_H__
 
 #include <limits.h>
+#include <time.h>
 #include "tree.h"
 #include "files.h"
 #include "print.h"

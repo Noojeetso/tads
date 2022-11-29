@@ -45,7 +45,7 @@ scan_menu(int *key)
     {
         print_newline();
         fputs("Не был введён номер меню\n\n", stderr);
-        return ERR_INPUT_NUMBER;
+        return ERR_MENU_KEY_INPUT;
     }
 
     *key = ch - '0';
@@ -221,4 +221,3 @@ menu_loop()
 
     return EXIT_SUCCESS;
 }
-

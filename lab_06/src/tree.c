@@ -1,12 +1,12 @@
 #include "tree.h"
 
 int
-compare_int(int first,
-            int second)
+compare_int(int a,
+            int b)
 {
-    if (first == second)
+    if (a == b)
         return 0;
-    return first > second ? 1 : -1;
+    return a > b ? 1 : -1;
 }
 
 tree_node_t*
@@ -223,8 +223,7 @@ bst_insert(tree_node_t *tree,
 
     cmp = compare_int(value, tree->value);
     if (cmp == 0)
-        return tree;
-        // abort();
+        abort();
     else if (cmp > 0)
         tree->right = bst_insert(tree->right, value);
     else
@@ -424,8 +423,7 @@ avl_insert(tree_node_t *tree,
 
     cmp = compare_int(value, tree->value);
     if (cmp == 0)
-        return tree;
-        // abort();
+        abort();
     else if (cmp > 0)
         tree->right = avl_insert(tree->right, value);
     else

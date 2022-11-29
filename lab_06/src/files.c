@@ -1,5 +1,4 @@
 #include "files.h"
-#include <time.h>
 
 array_t *
 new_array(size_t size)
@@ -70,6 +69,11 @@ file_to_array(const char *file_name)
 
     arr_size = get_records_amount(file);
     array = new_array(arr_size);
+    if (array == NULL)
+    {
+        fputs("Ошибка выделения памяти под массив\n", stderr);
+        return NULL;
+    }
 
     fseek(file, 0, SEEK_SET);
     while (fscanf(file, "%d", &value) == 1)
@@ -84,17 +88,14 @@ int
 file_search(char *file_name,
             int value)
 {
-    // clock_t start, end;
     size_t found_index;
     array_t *array;
     int rc;
 
-    // start = clock();
     array = file_to_array(file_name);
     if (array == NULL)
         return ERR_NULL_POINTER;
     rc = array_search_number(array, value, &found_index);
-    // end = clock();
 
     if (rc != EXIT_SUCCESS)
         puts("Элемент не найден");
@@ -102,8 +103,6 @@ file_search(char *file_name,
         printf("Элемент найден: %d\n", array->data[found_index]);
 
     free_array(array);
-
-    // printf("Затрачено времени: %lu мкс\n", (end - start) / (CLOCKS_PER_SEC / 1000000));
 
     return EXIT_SUCCESS;
 }

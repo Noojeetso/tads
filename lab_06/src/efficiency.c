@@ -1,9 +1,8 @@
 #include "efficiency.h"
-#include "graphviz.h"
 
 int
-compare_integer(const void *a_ptr,
-                const void *b_ptr)
+compare_int_pointers(const void *a_ptr,
+                     const void *b_ptr)
 {
     int a = *(int *)a_ptr;
     int b = *(int *)b_ptr;
@@ -47,7 +46,7 @@ print_results(results_t *results)
         print_newline();
     }
     print_newline();
-    puts("Коэффициент ветвления деревьев:");
+    puts("Средние коэффициенты ветвления деревьев:");
     for (size_t i = 0; i < sizeof(file_names) / sizeof(file_names[0]); i++)
     {
         puts(file_names[i]);
@@ -93,7 +92,7 @@ print_efficiency(void)
             // Замер времени создания отсортированного массива в мкс
             start = clock();
             array = file_to_array(file_names[name_id]);
-            qsort(array->data, array->size, sizeof(int), compare_integer);
+            qsort(array->data, array->size, sizeof(int), compare_int_pointers);
             end = clock();
             results.file_sort[name_id] += (end - start) / (CLOCKS_PER_SEC / 1000000);
             fseek(file, 0, SEEK_SET);
