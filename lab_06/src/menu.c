@@ -16,45 +16,6 @@ print_menu()
 }
 
 int
-flush_input()
-{
-    int amount = 0;
-    int ch;
-    do
-    {
-        ch = fgetc(stdin);
-        if (ch == EOF)
-            break;
-        amount++;
-    }
-    while (ch != '\n');
-
-    return amount;
-}
-
-int
-scan_menu(int *key)
-{
-    int ch;
-
-    printf("%s", "Номер меню: ");
-
-    ch = fgetc(stdin);
-
-    if (ch == '\n')
-    {
-        print_newline();
-        fputs("Не был введён номер меню\n\n", stderr);
-        return ERR_MENU_KEY_INPUT;
-    }
-
-    *key = ch - '0';
-
-    return EXIT_SUCCESS;
-}
-
-
-int
 menu_loop()
 {
     int rc;
@@ -69,10 +30,9 @@ menu_loop()
         print_menu();
 
         rc = scan_menu(&key);
+        print_newline();
         if (rc != EXIT_SUCCESS)
             continue;
-
-        print_newline();
 
         switch (key)
         {
@@ -211,11 +171,9 @@ menu_loop()
                 print_efficiency();
                 break;
             default:
-                fprintf(stderr, "Ожидалась цифра в пределах от %d до %d\n\n", MIN_MENU_KEY, MAX_MENU_KEY);
+                fprintf(stderr, "Ожидалась цифра в пределах от %d до %d\n", MIN_MENU_KEY, MAX_MENU_KEY);
         }
         print_newline();
-
-        flush_input();
     }
     while (key);
 
