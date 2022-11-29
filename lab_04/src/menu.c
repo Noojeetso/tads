@@ -7,16 +7,17 @@ print_menu()
     puts("Главное меню:");
     puts("0. Выход");
     puts("1. Вывод эффективности");
-    puts("2. Вывести убывающие серии последовательности целых чисел в обратном порядке\n");
     puts("Методы стека на основе массива");
-    puts("3. Вывести состояние стека");
-    puts("4. Добавить элемент в стек");
-    puts("5. Удалить элемент из стека\n");
+    puts("2. Вывести состояние стека");
+    puts("3. Добавить элемент в стек");
+    puts("4. Удалить элемент из стека\n");
+    puts("5. Вывести убывающие серии последовательности целых чисел в обратном порядке\n");
     puts("Методы стека на основе списка");
     puts("6. Вывести состояние стека");
     puts("7. Добавить элемент в стек");
     puts("8. Удалить элемент из стека");
     puts("9. Вывести массив освободившихся адресов\n\n");
+    puts("10. Вывести убывающие серии последовательности целых чисел в обратном порядке\n");
 }
 
 int
@@ -102,6 +103,9 @@ menu_loop(array_stack_t *array_stack, list_stack_t * list_stack, adress_array_t 
     int rc;
     int key = -1;
     int value;
+    int *in_array;
+    int *out_array;
+    int array_size;
 
     do
     {
@@ -116,9 +120,17 @@ menu_loop(array_stack_t *array_stack, list_stack_t * list_stack, adress_array_t 
             case 0:
                 break;
             case 1:
+                print_results();
                 break;
             case 2:
-                array_stack_print_reversed_task();
+                printf("Введите последовательность чисел (от %d до %d), каждое в новой строке.\n", INT_MIN, INT_MAX);
+                puts("По окончании ввода нажмите ENTER.");
+                in_array = scan_array(&array_size);
+                out_array = get_array_stack_reversed_sequence(in_array, array_size);
+                puts("Полученная строка:");
+                for (size_t i = 0; i < array_size; i++)
+                    printf("%d%c", out_array[i], i == array_size - 1 ? '\n' : ' ');
+                free(out_array);
                 break;
             case 3:
                 array_stack_print(array_stack);

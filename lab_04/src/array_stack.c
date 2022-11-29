@@ -138,102 +138,47 @@ array_stack_print(array_stack_t *stack)
     }
 }
 
-int
-get_value(char *buffer,
-          size_t buffer_size,
-          int *value)
+int *
+get_array_stack_reversed_sequence(int *input_array,
+                                  size_t array_size)
 {
-    size_t str_length;
-    char *endptr;
-
-    if (fgets(buffer, buffer_size, stdin) == NULL)
-        return EXIT_FAILURE;
-    str_length = strlen(buffer);
-
-    if (str_length == 1)
-        return EOF;
-
-    if (buffer[str_length - 1] != '\n')
-    {
-        fputs("Ошибка считывания числа\n", stderr);
-        return EXIT_FAILURE;
-    }
-    buffer[str_length - 1] = '\0';
-
-    *value = strtol(buffer, &endptr, 10);
-
-    if (endptr - buffer != strlen(buffer))
-    {
-        fputs("Ошибка считывания числа\n", stderr);
-        return EXIT_FAILURE;
-    }
-    return EXIT_SUCCESS;
-}
-
-void
-array_stack_print_reversed_task(void)
-{
-    int rc;
     int previous_value;
     int value;
-    size_t buffer_size = log(INT_MAX) / log(10) + 4;
-    char *buffer = malloc(buffer_size);
-
-    size_t max_array_size = 10;
-    size_t array_size = 0;
-    int *output_array = malloc(max_array_size * sizeof(int));
-
     array_stack_t *stack = array_stack_create(100);
     size_t stack_size;
     int stack_value;
+    size_t index = 0;
 
-    printf("Введите последовательность чисел (от %d до %d), каждое в новой строке.\n", INT_MIN, INT_MAX);
-    puts("По окончании ввода нажмите ENTER.");
+    int *output_array = malloc(array_size * sizeof(int));
 
-    rc = get_value(buffer, buffer_size, &value);
+    value = input_array[0];
+    stack->push(stack, value);
     previous_value = value;
-    while (rc == EXIT_SUCCESS)
+    for (size_t i = 1; i < array_size; i++)
     {
+        value = input_array[i];
         if (value >= previous_value)
         {
             stack_size = stack->size;
-            for (size_t i = 0; i < stack_size; i++)
+            for (size_t j = 0; j < stack_size; j++)
             {
-                if (array_size == max_array_size)
-                {
-                    output_array = realloc(output_array, max_array_size * 2 * sizeof(int));
-                    max_array_size *= 2;
-                }
                 stack->pop(stack, &stack_value);
-                output_array[array_size++] = stack_value;
+                output_array[index++] = stack_value;
             }
         }
         stack->push(stack, value);
-
         previous_value = value;
-        rc = get_value(buffer, buffer_size, &value);
     }
-
-    if (rc != EOF)
-    {
-        free(buffer);
-        free(output_array);
-        return;
-    }
+    free(input_array);
 
     stack_size = stack->size;
     for (size_t i = 0; i < stack_size; i++)
     {
-        if (array_size == max_array_size)
-        {
-            output_array = realloc(output_array, max_array_size * 2 * sizeof(int));
-            max_array_size *= 2;
-        }
         stack->pop(stack, &stack_value);
-        output_array[array_size++] = stack_value;
+        output_array[index++] = stack_value;
     }
 
-    puts("Полученная строка:");
-    for (size_t i = 0; i < array_size; i++)
-        printf("%d%c", output_array[i], i == array_size - 1 ? '\n' : ' ');
+    array_stack_free(stack);
+
+    return output_array;
 }

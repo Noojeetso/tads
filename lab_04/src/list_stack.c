@@ -18,6 +18,7 @@ list_stack_create(size_t max_size)
         return NULL;
     }
     new_list_stack->max_size = max_size;
+    new_list_stack->size = 0;
     new_list_stack->tail = NULL;
     new_list_stack->push = list_stack_push_safe;
     new_list_stack->pop = list_stack_pop_safe;
@@ -248,4 +249,49 @@ list_stack_print(list_stack_t *stack)
 
         list_stack_free(tmp_stack);
     }
+}
+
+int *
+get_list_stack_reversed_sequence(int *input_array,
+                                 size_t array_size)
+{
+    int previous_value;
+    int value;
+    list_stack_t *stack = list_stack_create(100);
+    size_t stack_size;
+    int stack_value;
+    size_t index = 0;
+
+    int *output_array = malloc(array_size * sizeof(int));
+
+    value = input_array[0];
+    stack->push(stack, value);
+    previous_value = value;
+    for (size_t i = 1; i < array_size; i++)
+    {
+        value = input_array[i];
+        if (value >= previous_value)
+        {
+            stack_size = stack->size;
+            for (size_t j = 0; j < stack_size; j++)
+            {
+                stack->pop(stack, &stack_value);
+                output_array[index++] = stack_value;
+            }
+        }
+        stack->push(stack, value);
+        previous_value = value;
+    }
+    free(input_array);
+
+    stack_size = stack->size;
+    for (size_t i = 0; i < stack_size; i++)
+    {
+        stack->pop(stack, &stack_value);
+        output_array[index++] = stack_value;
+    }
+
+    list_stack_free(stack);
+
+    return output_array;
 }

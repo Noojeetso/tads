@@ -2,6 +2,7 @@
 #define __MENU_H__
 
 #include <limits.h>
+#include "efficiency.h"
 #include "stack.h"
 
 int

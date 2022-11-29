@@ -1,13 +1,11 @@
 #ifndef __STACK_H__
 #define __STACK_H__
 
-#include <math.h>
-#include <limits.h>
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "presets.h"
 #include "errors.h"
+#include "scan.h"
 
 typedef struct array_stack
 {
@@ -81,8 +79,9 @@ array_stack_pop(array_stack_t *stack);
 void
 array_stack_print(array_stack_t *stack);
 
-void
-array_stack_print_reversed_task(void);
+int *
+get_array_stack_reversed_sequence(int *input_array,
+                                  size_t array_size);
 
 // LIST_STACK
 adress_array_t *
@@ -127,6 +126,10 @@ list_stack_pop_safe(list_stack_t *stack,
 
 void
 list_stack_print(list_stack_t *stack);
+
+int *
+get_list_stack_reversed_sequence(int *input_array,
+                                 size_t array_size);
 
 int
 add_tail_adress(adress_array_t *adress_array,
