@@ -31,7 +31,7 @@ print_results(results_t *results)
                           "Файл, отсортированный в обратном порядке"};
     print_newline();
     print_newline();
-    puts("Сортировка");
+    puts("Сортировка (время в микросекундах)");
     for (size_t i = 0; i < sizeof(file_names) / sizeof(file_names[0]); i++)
     {
         puts(file_names[i]);
@@ -39,11 +39,11 @@ print_results(results_t *results)
         print_newline();
     }
     print_newline();
-    puts("Поиск");
+    puts("Поиск (количество сравнений)");
     for (size_t i = 0; i < sizeof(file_names) / sizeof(file_names[0]); i++)
     {
         puts(file_names[i]);
-        print_structs(results->avl_sort, results->bst_sort, results->file_sort, i);
+        print_structs(results->avl_search, results->bst_search, results->file_search, i);
         print_newline();
     }
     print_newline();

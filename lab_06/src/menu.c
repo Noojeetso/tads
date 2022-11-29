@@ -47,15 +47,6 @@ scan_menu(int *key)
         fputs("Не был введён номер меню\n\n", stderr);
         return ERR_INPUT_NUMBER;
     }
-    /*
-    else
-    {
-    if (flush_input() != 1)
-    {
-        print_newline();
-        fputs("Ошибка считывания номера меню\n\n", stderr);
-        return EXIT_FAILURE;
-    }*/
 
     *key = ch - '0';
 
@@ -173,6 +164,7 @@ menu_loop()
                 rc = file_push(DATABASE_FILENAME, value);
                 if (rc != EXIT_SUCCESS)
                     break;
+                puts("Элемент успешно вставлен");
 
                 break;
             case 5:
@@ -192,6 +184,7 @@ menu_loop()
                 rc = file_pop(DATABASE_FILENAME, value);
                 if (rc != EXIT_SUCCESS)
                     break;
+                puts("Элемент успешно удален");
 
                 break;
             case 6:
