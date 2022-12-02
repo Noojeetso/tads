@@ -85,6 +85,7 @@ delete_by_id(record_table_t *record_table, size_t id)
     }
 
     id--;
+    free_record_safe(&record_table->records[id]);
 
     for (size_t i = 0; i < record_table->size; i++)
         if (record_table->keys[i].id == id)

@@ -17,7 +17,7 @@ dynamic_string_append(char **input_str,
             char *tmp = realloc(*input_str, max_size * 2);
             if (tmp == NULL)
             {
-                DEBUG_PRINT("Ошибка выделения памяти под расширенную строку");
+                fputs("Ошибка выделения памяти под расширенную строку", stderr);
                 free(*input_str);
                 *input_str = NULL;
                 return ERR_NO_MEMORY;
