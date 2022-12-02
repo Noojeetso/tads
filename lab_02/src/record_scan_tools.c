@@ -15,27 +15,20 @@ dynamic_string_append(char **input_str,
         if (str_length + 1 == max_size)
         {
             char *tmp = realloc(*input_str, max_size * 2);
-            if (tmp != NULL)
+            if (tmp == NULL)
             {
-                *input_str = tmp;
-            }
-            else
-            {
-                fprintf(stderr, "%s\n", "Ошибка выделения памяти под строку");
+                DEBUG_PRINT("Ошибка выделения памяти под расширенную строку");
                 free(*input_str);
+                *input_str = NULL;
                 return ERR_NO_MEMORY;
             }
+            *input_str = tmp;
             max_size *= 2;
         }
         (*input_str)[str_length++] = (char)ch;
     }
 
     (*input_str)[str_length] = '\0';
-
-    if (strlen(*input_str) == 0)
-    {
-        return ERR_EMPTY_STRING;
-    }
 
     return EXIT_SUCCESS;
 }
@@ -58,9 +51,10 @@ scan_string(char *short_str,
             fprintf(stderr, "%s\n", "Ошибка выделения памяти под расширенную строку");
             return ERR_NO_MEMORY;
         }
+
         strncpy(*long_str, short_str, str_length);
-        dynamic_string_append(long_str, str_length, input_file);
-        return EXIT_SUCCESS;
+
+        return dynamic_string_append(long_str, str_length, input_file);
     }
 
     short_str[str_length - 1] = '\0';

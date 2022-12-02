@@ -3,7 +3,7 @@
 void
 free_record_safe(record_t *record)
 {
-    if (record->play_name_long != NULL)
+    if (record->theater_name_long != NULL)
         free(record->theater_name_long);
     if (record->play_name_long != NULL)
         free(record->play_name_long);
