@@ -55,8 +55,10 @@ menu_loop()
                 puts("Очистка закрытой хэш-таблицы...");
                 free_table_closed(hashtable_closed);
 
+                array_t *array = file_to_array(DATABASE_FILENAME);
                 hashtable_opened = new_hashtable_opened(array->size * HASH_OPENED_COEFFICIENT);
                 hashtable_closed = new_hashtable_closed(array->size * HASH_CLOSED_COEFFICIENT);
+                free_array(array);
 
                 print_newline();
                 puts("Открытие файла на чтение...");
