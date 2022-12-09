@@ -1,5 +1,5 @@
 CC := gcc -std=gnu99 -I./inc/
-CFLAGS := -Werror -pedantic -O0 -g
+CFLAGS := -Wall -Werror -pedantic -O0 -g
 
 OUT_DIR := ./out
 
