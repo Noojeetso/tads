@@ -122,31 +122,11 @@ menu_loop()
 
                 break;
             case 2:
-                rc = tree_to_dot("out/bst_tree.dot", bst);
-                if (rc != EXIT_SUCCESS)
-                    break;
-
-                rc = dot_to_svg("out/bst_tree.dot", "out/bst_tree.svg");
-                if (rc != EXIT_SUCCESS)
-                    return rc;
-
-                rc = open_svg("out/bst_tree.svg");
-                if (rc != EXIT_SUCCESS)
-                    break;
+                tree_visualize(bst, "bst");
 
                 break;
             case 3:
-                rc = tree_to_dot("out/avl_tree.dot", avl);
-                if (rc != EXIT_SUCCESS)
-                    break;
-
-                rc = dot_to_svg("out/avl_tree.dot", "out/avl_tree.svg");
-                if (rc != EXIT_SUCCESS)
-                    break;
-
-                rc = open_svg("out/avl_tree.svg");
-                if (rc != EXIT_SUCCESS)
-                    break;
+                tree_visualize(avl, "avl");
 
                 break;
             case 4:
