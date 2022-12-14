@@ -187,6 +187,7 @@ free_table_closed(hashtable_closed_t *hashtable)
     free(hashtable);
 }
 
+// В этих функциях не используется модуль, потому что ещё до взятия остатка тип key неявно преобразуетя к size_t
 size_t
 get_hash_opened(int key,
                 size_t max_size)
@@ -249,7 +250,6 @@ int
 push_table_closed(hashtable_closed_t *hashtable,
                   int value)
 {
-
     size_t hash;
     int iterations = 0;
     int step = hashtable->max_size / HASHTABLE_STEP_DIVISION;
