@@ -98,7 +98,9 @@ scan_menu(int *key)
 }
 
 int
-menu_loop(array_stack_t *array_stack, list_stack_t * list_stack, adress_array_t *adress_array)
+menu_loop(array_stack_t *array_stack,
+          list_stack_t * list_stack,
+          adress_array_t *adress_array)
 {
     int rc;
     int key = -1;
@@ -123,20 +125,9 @@ menu_loop(array_stack_t *array_stack, list_stack_t * list_stack, adress_array_t 
                 print_results();
                 break;
             case 2:
-                printf("Введите последовательность чисел (от %d до %d), каждое в новой строке.\n", INT_MIN, INT_MAX);
-                puts("По окончании ввода нажмите ENTER.");
-                in_array = scan_array(&array_size);
-                out_array = get_array_stack_reversed_sequence(in_array, array_size);
-                free(in_array);
-                puts("Полученная строка:");
-                for (size_t i = 0; i < array_size; i++)
-                    printf("%d%c", out_array[i], i == array_size - 1 ? '\n' : ' ');
-                free(out_array);
-                break;
-            case 3:
                 array_stack_print(array_stack);
                 break;
-            case 4:
+            case 3:
                 rc = scan_integer(&value, INT_MIN, INT_MAX);
                 if (rc != EXIT_SUCCESS)
                     break;
@@ -147,12 +138,23 @@ menu_loop(array_stack_t *array_stack, list_stack_t * list_stack, adress_array_t 
                 puts("Успешно вставлено новое значение в стек");
                 add_tail_adress(adress_array, list_stack);
                 break;
-            case 5:
+            case 4:
                 puts("Удаление элемента из стека...");
                 rc = array_stack->pop(array_stack, &value);
                 if (rc != EXIT_SUCCESS)
                     break;
                 printf("Уcпешно удалён элемент: %d\n", value);
+                break;
+            case 5:
+                printf("Введите последовательность чисел (от %d до %d), каждое в новой строке.\n", INT_MIN, INT_MAX);
+                puts("По окончании ввода нажмите ENTER.");
+                in_array = scan_array(&array_size);
+                out_array = get_array_stack_reversed_sequence(in_array, array_size);
+                free(in_array);
+                puts("Полученная строка:");
+                for (size_t i = 0; i < array_size; i++)
+                    printf("%d%c", out_array[i], i == array_size - 1 ? '\n' : ' ');
+                free(out_array);
                 break;
             case 6:
                 list_stack_print(list_stack);
@@ -178,6 +180,17 @@ menu_loop(array_stack_t *array_stack, list_stack_t * list_stack, adress_array_t 
                 break;
             case 9:
                 print_adress_array(adress_array);
+                break;
+            case 10:
+                printf("Введите последовательность чисел (от %d до %d), каждое в новой строке.\n", INT_MIN, INT_MAX);
+                puts("По окончании ввода нажмите ENTER.");
+                in_array = scan_array(&array_size);
+                out_array = get_list_stack_reversed_sequence(in_array, array_size);
+                free(in_array);
+                puts("Полученная строка:");
+                for (size_t i = 0; i < array_size; i++)
+                    printf("%d%c", out_array[i], i == array_size - 1 ? '\n' : ' ');
+                free(out_array);
                 break;
             default:
                 fprintf(stderr, "Ожидалась цифра в пределах от %d до %d\n\n", MIN_MENU_KEY, MAX_MENU_KEY);

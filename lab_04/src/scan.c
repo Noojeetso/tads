@@ -32,6 +32,13 @@ get_value(char *buffer,
     return EXIT_SUCCESS;
 }
 
+int
+scan_value()
+{
+    char *line;
+    line = getline();
+}
+
 int *
 scan_array(int *array_size)
 {
@@ -45,7 +52,7 @@ scan_array(int *array_size)
     size_t buffer_size = log(INT_MAX) / log(10) + 4;
     char *buffer = malloc(buffer_size);
 
-    rc = get_value(buffer, buffer_size, &value);
+    rc = scan_value(buffer, buffer_size, &value);
     while (rc == EXIT_SUCCESS)
     {
         if (*array_size == max_array_size)
@@ -54,7 +61,7 @@ scan_array(int *array_size)
             max_array_size *= 2;
         }
         output_array[(*array_size)++] = value;
-        rc = get_value(buffer, buffer_size, &value);
+        rc = scan_value(buffer, buffer_size, &value);
     }
     free(buffer);
 

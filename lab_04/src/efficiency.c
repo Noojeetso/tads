@@ -129,6 +129,7 @@ print_task_results(int max_size)
     size_t time_list = 0;
     clock_t start, end;
     int *random_numbers;
+    int *reversed_sequence;
 
     if (array_stack == NULL || list_stack == NULL)
         return;
@@ -142,14 +143,16 @@ print_task_results(int max_size)
     for (size_t i = 0; i < ITERATIONS; i++)
     {
         start = clock();
-        get_array_stack_reversed_sequence(random_numbers, max_size);
+        reversed_sequence = get_array_stack_reversed_sequence(random_numbers, max_size);
         end = clock();
         time_array += (end - start) / (CLOCKS_PER_SEC / 1000000);
+        free(reversed_sequence);
 
         start = clock();
-        get_list_stack_reversed_sequence(random_numbers, max_size);
+        reversed_sequence = get_list_stack_reversed_sequence(random_numbers, max_size);
         end = clock();
         time_list += (end - start) / (CLOCKS_PER_SEC / 1000000);
+        free(reversed_sequence);
     }
 
     free(random_numbers);
