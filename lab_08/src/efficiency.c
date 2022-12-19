@@ -77,16 +77,18 @@ print_results(results_t *results)
     }
     print_newline();
 }
-
+/*
 void
 ignore(tree_node_t *node)
 {
     return;
 }
+*/
 
 void
 print_efficiency(void)
 {
+    /*
     int rc;
     tree_node_t *avl = NULL;
     tree_node_t *bst = NULL;
@@ -103,11 +105,13 @@ print_efficiency(void)
     size_t elements_amount;
     int values[ITERATIONS];
 
-    ignore(result_node);
+    // ignore(result_node);
 
     double max_comps;
     double average_compares;
+    */
 
+    /*
     puts("Ввод максимального среднего количества сравнений");
     rc = scan_double(&max_comps, MIN_COMPARES, MAX_COMPARES);
     if (rc != EXIT_SUCCESS)
@@ -241,6 +245,6 @@ print_efficiency(void)
         }
         fclose(file);
     }
-
-    print_results(&results);
+    */
+    // print_results(&results);
 }

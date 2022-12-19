@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-// #include "files.h"
+#include <string.h>
 #include "array_graph.h"
 #include "list_graph.h"
 
@@ -17,7 +17,17 @@ list_graph_visualize(list_graph_t *list_graph,
                      char *graph_name);
 
 int
+list_graph_visualize_unreachables(list_graph_t *list_graph,
+                                  int vertex_number,
+                                  char *graph_name);
+
+int
 array_graph_visualize(array_graph_t *array_graph,
                       char *graph_name);
+
+int
+array_graph_visualize_unreachables(array_graph_t *array_graph,
+                                   int vertex_number,
+                                   char *graph_name);
 
 #endif  // __GRAPHVIZ_H__

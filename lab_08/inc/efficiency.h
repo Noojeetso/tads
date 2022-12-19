@@ -3,10 +3,6 @@
 
 #include <limits.h>
 #include <time.h>
-#include "tree.h"
-#include "hashtable.h"
-#include "files.h"
-#include "print.h"
 #include "scan.h"
 
 #define ITERATIONS 10

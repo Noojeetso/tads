@@ -74,12 +74,13 @@ scan_list_graph_vertex(FILE *file,
     int number_from;
     int number_to;
     int index_from;
+    int index_to;
     char ch;
+    vertex_t *head_vertex_to;
     vertex_t *vertex_from;
     vertex_t *vertex_to;
-    // vertex_t *vertex_curr;
 
-    rc = scan_integer_file(file, &number_from, 0, list_graph->size);
+    rc = scan_integer_file(file, &number_from, 1, list_graph->size);
     if (rc != EXIT_SUCCESS)
         return rc;
     index_from = number_from - 1;
@@ -108,9 +109,23 @@ scan_list_graph_vertex(FILE *file,
         return ERR_FILE_BROKEN;
     }
 
-    rc = scan_integer_file(file, &number_to, 0, list_graph->size);
+    rc = scan_integer_file(file, &number_to, 1, list_graph->size);
     if (rc != EXIT_SUCCESS)
         return rc;
+    index_to = number_to - 1;
+
+    if (list_graph->vertices[index_to] == NULL)
+    {
+        head_vertex_to = malloc(sizeof(vertex_t));
+        if (head_vertex_to == NULL)
+        {
+            fputs("Ошибка выделения памяти под новую вершину\n", stderr);
+            return ERR_NO_MEMORY;
+        }
+        head_vertex_to->number = number_to;
+        head_vertex_to->next = NULL;
+        list_graph->vertices[index_to] = head_vertex_to;
+    }
 
     vertex_to = malloc(sizeof(vertex_t));
     if (vertex_to == NULL)
@@ -122,20 +137,6 @@ scan_list_graph_vertex(FILE *file,
     vertex_to->number = number_to;
     vertex_to->next = list_graph->vertices[index_from]->next;
     list_graph->vertices[index_from]->next = vertex_to;
-
-    /*
-    if (list_graph->vertices[number - 1] == NULL)
-    {
-        list_graph->vertices[vertex_from->number - 1] = vertex_from;
-        return EXIT_SUCCESS;
-    }
-
-    vertex_curr = list_graph->vertices[vertex_from->number - 1];
-    while (vertex_curr->next != NULL)
-        vertex_curr = vertex_curr->next;
-
-    vertex_curr->next = vertex_from;
-    */
 
     return EXIT_SUCCESS;
 }
@@ -160,6 +161,7 @@ list_graph_from_file(char *filename)
     if (rc != 1)
     {
         fputs("Ошибка ввода количества вершин\n", stderr);
+        fclose(file);
         return NULL;
     }
 
@@ -170,23 +172,33 @@ list_graph_from_file(char *filename)
 
     list_graph = new_list_graph(size);
     if (list_graph == NULL)
+    {
+        fclose(file);
         return NULL;
+    }
 
-    puts("\nВводите связи между вершинами.\n"
-         "В каждой строке должно располагаться от одного до двух индексов вершин\n");
+    // puts("\nВводите связи между вершинами.\n"
+    //      "В каждой строке должно располагаться от одного до двух индексов вершин\n");
     counter = 0;
     do
     {
         rc = scan_list_graph_vertex(file, list_graph);
-        puts("gere");
         counter++;
     }
     while (rc == EXIT_SUCCESS);
 
+    rc = fclose(file);
+    if (rc == EOF)
+    {
+        fputs("Ошибка закрытия файла\n", stderr);
+        free_list_graph(list_graph);
+        return NULL;
+    }
+
     if (counter == 1)
     {
         fputs("Не было введено ни одной вершины\n", stderr);
-        free(list_graph);
+        free_list_graph(list_graph);
         return NULL;
     }
 
@@ -195,11 +207,16 @@ list_graph_from_file(char *filename)
 
 int
 write_list_graph_connections(FILE *file,
-                             list_graph_t *list_graph)
+                             void *graph,
+                             void *arg)
 {
+    list_graph_t *list_graph = (list_graph_t *)graph;
     vertex_t *from_vertex;
     vertex_t *to_vertex;
     int rc;
+    int *min_paths = (int *)arg;
+    char *from_color;
+    char *from_style;
 
     for (size_t i = 0; i < list_graph->size; i++)
     {
@@ -210,6 +227,19 @@ write_list_graph_connections(FILE *file,
 
         to_vertex = from_vertex->next;
 
+        if (min_paths != NULL)
+        {
+            from_style = "";
+            from_color = "";
+            if (min_paths[from_vertex->number - 1] == INT_MAX)
+            {
+                from_style = FILLED;
+                from_color = ORANGE;
+            }
+            rc = fprintf(file, "%d [style=\"%s\", fillcolor=\"%s\"];\n",
+                         from_vertex->number, from_style, from_color);
+        }
+
         if (to_vertex == NULL)
         {
             rc = fprintf(file, "%d;\n", from_vertex->number);
@@ -219,12 +249,86 @@ write_list_graph_connections(FILE *file,
 
         while (to_vertex != NULL)
         {
-            rc = fprintf(file, "%d -> %d;\n", from_vertex->number, to_vertex->number);
+            rc = fprintf(file, "%d -> %d;\n",
+                         from_vertex->number, to_vertex->number);
             if (rc == EOF)
                 return rc;
             to_vertex = to_vertex->next;
         }
     }
+
+    return EXIT_SUCCESS;
+}
+
+int
+find_list_graph_min_paths(list_graph_t *list_graph,
+                          int start_number,
+                          int **min_paths)
+{
+    array_queue_t *array_queue;
+    int number;
+    int curr_number;
+    int rc;
+    vertex_t *curr_vertex;
+
+    if (list_graph == NULL)
+    {
+        fputs("Граф не существует\n", stderr);
+        return ERR_NULL_POINTER;
+    }
+
+    if (start_number > list_graph->size ||
+        list_graph->vertices[start_number - 1] == NULL)
+    {
+        fputs("В графе нет вершины с таким номером\n", stderr);
+        return ERR_NOT_FOUND;
+    }
+
+    (*min_paths) = malloc(list_graph->size * sizeof(int));
+    if ((*min_paths) == NULL)
+    {
+        fputs("Ошибка выделения памяти под массив минимальных расстояний\n", stderr);
+        return ERR_NO_MEMORY;
+    }
+
+    for (size_t i = 0; i < list_graph->size; i++)
+        (*min_paths)[i] = INT_MAX;
+    (*min_paths)[start_number - 1] = 0;
+
+    array_queue = new_array_queue(INITIAL_QUEUE_SIZE);
+    if (array_queue == NULL)
+    {
+        fputs("Ошибка выделения памяти под очередь\n", stderr);
+        free(min_paths);
+        return ERR_NO_MEMORY;
+    }
+
+    number = start_number;
+
+    do
+    {
+        curr_vertex = list_graph->vertices[number - 1];
+        while (curr_vertex != NULL)
+        {
+            curr_number = curr_vertex->number;
+            if ((*min_paths)[curr_number - 1] == INT_MAX)
+            {
+                (*min_paths)[curr_number - 1] = (*min_paths)[number - 1] + 1;
+                rc = array_queue_push(array_queue, curr_number);
+                if (rc != EXIT_SUCCESS)
+                {
+                    free(min_paths);
+                    free_array_queue(array_queue);
+                    return ERR_NO_MEMORY;
+                }
+            }
+            curr_vertex = curr_vertex->next;
+        }
+        rc = array_queue_pop(array_queue, &number);
+    }
+    while (rc == EXIT_SUCCESS);
+
+    free_array_queue(array_queue);
 
     return EXIT_SUCCESS;
 }

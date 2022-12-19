@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "errors.h"
 #include "print.h"
 
@@ -27,5 +28,9 @@ scan_menu(int *key);
 
 int
 flush_input(void);
+
+int
+scan_string(char *string,
+            size_t max_size);
 
 # endif  // __SCAN_H__

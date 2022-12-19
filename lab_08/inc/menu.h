@@ -5,7 +5,7 @@
 #include "array_graph.h"
 #include "list_graph.h"
 #include "graphviz.h"
-// #include "efficiency.h"
+#include "efficiency.h"
 
 #define MIN_MENU_KEY 0
 #define MAX_MENU_KEY 6

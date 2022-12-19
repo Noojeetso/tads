@@ -15,8 +15,10 @@ create_graph_file_name(char *graph_name,
 }
 
 int
-list_graph_to_dot(list_graph_t *list_graph,
-                  char *graph_name)
+graph_to_dot(void *graph,
+             char *graph_name,
+             int (*write_graph_connections)(FILE *file, void *graph, void *arg),
+             void *arg)
 {
     int rc;
     FILE *output_file;
@@ -24,7 +26,7 @@ list_graph_to_dot(list_graph_t *list_graph,
 
     puts("Преобразование графа в .dot файл...");
 
-    if (list_graph == NULL)
+    if (graph == NULL)
     {
         fputs("Граф не существует\n", stderr);
         return ERR_NULL_POINTER;
@@ -53,71 +55,7 @@ list_graph_to_dot(list_graph_t *list_graph,
         return ERR_WRITING_FILE;
     }
 
-    rc = write_list_graph_connections(output_file, list_graph);
-    if (rc != EXIT_SUCCESS)
-    {
-        fputs("Ошибка при записи в файл\n", stderr);
-        fclose(output_file);
-        return rc;
-    }
-
-    rc = fputs("}\n", output_file);
-
-    if (rc == EOF)
-    {
-        fclose(output_file);
-        return ERR_WRITING_FILE;
-    }
-
-    if (fclose(output_file) == EOF)
-    {
-        fputs("Ошибка при закрытии файла\n", stderr);
-        return ERR_CLOSE_FILE;
-    }
-
-    return EXIT_SUCCESS;
-}
-
-int
-array_graph_to_dot(array_graph_t *array_graph,
-                   char *graph_name)
-{
-    int rc;
-    FILE *output_file;
-    char *file_name;
-
-    puts("Преобразование графа в .dot файл...");
-
-    if (array_graph == NULL)
-    {
-        fputs("Граф не существует\n", stderr);
-        return ERR_NULL_POINTER;
-    }
-
-    file_name = create_graph_file_name(graph_name, DOT_EXTENSION);
-    if (file_name == NULL)
-    {
-        fputs("Ошибка генерации имени файла\n", stderr);
-        return ERR_NO_MEMORY;
-    }
-
-    output_file = fopen(file_name, WRITE_MODE);
-    free(file_name);
-    if (output_file == NULL)
-    {
-        fputs("Ошибка при открытии файла на запись\n", stderr);
-        return ERR_OPEN_FILE;
-    }
-
-    rc = fputs("digraph new_graph {\n", output_file);
-    if (rc == EOF)
-    {
-        fputs("Ошибка при записи в файл\n", stderr);
-        fclose(output_file);
-        return ERR_WRITING_FILE;
-    }
-
-    rc = write_array_graph_connections(output_file, array_graph);
+    rc = write_graph_connections(output_file, graph, arg);
     if (rc != EXIT_SUCCESS)
     {
         fputs("Ошибка при записи в файл\n", stderr);
@@ -177,7 +115,7 @@ dot_to_svg(char *graph_name)
             return ERR_NO_MEMORY;
         }
 
-        execlp("dot", "dot", "-T"IMAGE_EXTENSION, input_file_name, "-o", output_file_name, NULL);
+        execlp("dot", DOT_EXTENSION, "-T"IMAGE_EXTENSION, input_file_name, "-o", output_file_name, NULL);
     }
 
     waitpid(postprocess_id, &rc, 0);
@@ -223,15 +161,9 @@ open_svg(char *graph_name)
     return EXIT_SUCCESS;
 }
 
-int
-list_graph_visualize(list_graph_t *list_graph,
-                     char *graph_name)
+int create_and_open_picture(char *graph_name)
 {
     int rc;
-
-    rc = list_graph_to_dot(list_graph, graph_name);
-    if (rc != EXIT_SUCCESS)
-        return rc;
 
     rc = dot_to_svg(graph_name);
     if (rc != EXIT_SUCCESS)
@@ -245,20 +177,81 @@ list_graph_visualize(list_graph_t *list_graph,
 }
 
 int
+list_graph_visualize(list_graph_t *list_graph,
+                     char *graph_name)
+{
+    int rc;
+
+    rc = graph_to_dot(list_graph, graph_name, write_list_graph_connections, NULL);
+    if (rc != EXIT_SUCCESS)
+        return rc;
+
+    create_and_open_picture(graph_name);
+    if (rc != EXIT_SUCCESS)
+        return rc;
+
+    return EXIT_SUCCESS;
+}
+
+int
 array_graph_visualize(array_graph_t *array_graph,
                       char *graph_name)
 {
     int rc;
 
-    rc = array_graph_to_dot(array_graph, graph_name);
+    rc = graph_to_dot(array_graph, graph_name, write_array_graph_connections, NULL);
     if (rc != EXIT_SUCCESS)
         return rc;
 
-    rc = dot_to_svg(graph_name);
+    create_and_open_picture(graph_name);
     if (rc != EXIT_SUCCESS)
         return rc;
 
-    rc = open_svg(graph_name);
+    return EXIT_SUCCESS;
+}
+
+int
+list_graph_visualize_unreachables(list_graph_t *list_graph,
+                                  int vertex_number,
+                                  char *graph_name)
+{
+    int rc;
+    int *min_paths;
+
+    rc = find_list_graph_min_paths(list_graph, vertex_number, &min_paths);
+    if (rc != EXIT_SUCCESS)
+        return rc;
+
+    rc = graph_to_dot(list_graph, graph_name, write_list_graph_connections, min_paths);
+    free(min_paths);
+    if (rc != EXIT_SUCCESS)
+        return rc;
+
+    create_and_open_picture(graph_name);
+    if (rc != EXIT_SUCCESS)
+        return rc;
+
+    return EXIT_SUCCESS;
+}
+
+int
+array_graph_visualize_unreachables(array_graph_t *array_graph,
+                                   int vertex_number,
+                                   char *graph_name)
+{
+    int rc;
+    int *min_paths;
+
+    rc = find_array_graph_min_paths(array_graph, vertex_number, &min_paths);
+    if (rc != EXIT_SUCCESS)
+        return rc;
+
+    rc = graph_to_dot(array_graph, graph_name, write_array_graph_connections, min_paths);
+    free(min_paths);
+    if (rc != EXIT_SUCCESS)
+        return rc;
+
+    create_and_open_picture(graph_name);
     if (rc != EXIT_SUCCESS)
         return rc;
 

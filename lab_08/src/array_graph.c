@@ -58,14 +58,15 @@ scan_array_graph_vertex(FILE *file,
     int number_to;
     char ch;
 
-    rc = scan_integer_file(file, &number_from, 0, array_graph->size);
+    rc = scan_integer_file(file, &number_from, 1, array_graph->size);
     if (rc != EXIT_SUCCESS)
         return rc;
+
+    array_graph->matrix[number_from - 1][number_from - 1] = 1;
 
     ch = fgetc(file);
     if (ch == '\n')
     {
-        array_graph->matrix[number_from - 1][number_from - 1] = 1;
         return EXIT_SUCCESS;
     }
     else if (ch != ' ')
@@ -74,10 +75,11 @@ scan_array_graph_vertex(FILE *file,
         return ERR_FILE_BROKEN;
     }
 
-    rc = scan_integer_file(file, &number_to, 0, array_graph->size);
+    rc = scan_integer_file(file, &number_to, 1, array_graph->size);
     if (rc != EXIT_SUCCESS)
         return rc;
 
+    array_graph->matrix[number_to - 1][number_to - 1] = 1;
     array_graph->matrix[number_from - 1][number_to - 1] = 1;
 
     return EXIT_SUCCESS;
@@ -115,16 +117,23 @@ array_graph_from_file(char *filename)
     if (array_graph == NULL)
         return NULL;
 
-    puts("\nВводите связи между вершинами.\n"
-         "В каждой строке должно располагаться от одного до двух индексов вершин\n");
+    // puts("\nВводите связи между вершинами.\n"
+    //      "В каждой строке должно располагаться от одного до двух индексов вершин\n");
     counter = 0;
     do
     {
         rc = scan_array_graph_vertex(file, array_graph);
-        puts("gere");
         counter++;
     }
     while (rc == EXIT_SUCCESS);
+
+    rc = fclose(file);
+    if (rc == EOF)
+    {
+        fputs("Ошибка закрытия файла\n", stderr);
+        free_array_graph(array_graph);
+        return NULL;
+    }
 
     if (counter == 1)
     {
@@ -138,39 +147,125 @@ array_graph_from_file(char *filename)
 
 int
 write_array_graph_connections(FILE *file,
-                              array_graph_t *array_graph)
+                              void *graph,
+                              void *arg)
 {
+    array_graph_t *array_graph = (array_graph_t *)graph;
+    int *min_paths = (int *)arg;
+    int rc;
+    char *from_color;
+    char *from_style;
+
+    if (min_paths != NULL)
+    {
+        for (size_t i = 0; i < array_graph->size; i++)
+        {
+            if (array_graph->matrix[i][i] == 0)
+                continue;
+            from_style = "";
+            from_color = "";
+            if (min_paths[i] == INT_MAX)
+            {
+                from_style = FILLED;
+                from_color = ORANGE;
+            }
+            rc = fprintf(file, "%lu [style=\"%s\", fillcolor=\"%s\"];\n",
+                         i + 1, from_style, from_color);
+            if (rc == EOF)
+                return rc;
+        }
+    }
+
+    for (size_t i = 0; i < array_graph->size; i++)
+    {
+        if (array_graph->matrix[i][i] == 0)
+            continue;
+        rc = fprintf(file, "%lu;\n", i + 1);
+        if (rc == EOF)
+            return rc;
+    }
+
+    for (size_t i = 0; i < array_graph->size; i++)
+        for (size_t j = 0; j < array_graph->size; j++)
+        {
+            if (array_graph->matrix[i][j] == 0 || i == j)
+                continue;
+
+            rc = fprintf(file, "%lu -> %lu;\n", i + 1, j + 1);
+            if (rc == EOF)
+                return rc;
+        }
+
+    return EXIT_SUCCESS;
+}
+
+int
+find_array_graph_min_paths(array_graph_t *array_graph,
+                           int start_number,
+                           int **min_paths)
+{
+    array_queue_t *array_queue;
+    int number;
     int rc;
 
+    if (array_graph == NULL)
+    {
+        fputs("Граф не существует\n", stderr);
+        return ERR_NULL_POINTER;
+    }
+
+    if (start_number > array_graph->size ||
+        array_graph->matrix[start_number - 1][start_number - 1] == 0)
+    {
+        fputs("В графе нет вершины с таким номером\n", stderr);
+        return ERR_NOT_FOUND;
+    }
+
+    (*min_paths) = malloc(array_graph->size * sizeof(int));
+    if ((*min_paths) == NULL)
+    {
+        fputs("Ошибка выделения памяти под массив минимальных расстояний\n", stderr);
+        return ERR_NO_MEMORY;
+    }
+
     for (size_t i = 0; i < array_graph->size; i++)
-        for (size_t j = i + 1; j < array_graph->size; j++)
+        (*min_paths)[i] = INT_MAX;
+    (*min_paths)[start_number - 1] = 0;
+
+    array_queue = new_array_queue(INITIAL_QUEUE_SIZE);
+    if (array_queue == NULL)
+    {
+        fputs("Ошибка выделения памяти под очередь\n", stderr);
+        free(min_paths);
+        return ERR_NO_MEMORY;
+    }
+
+    number = start_number;
+
+    do
+    {
+        for (size_t j = 0; j < array_graph->size; j++)
         {
-            if (array_graph->matrix[i][j] == 0)
+            if (array_graph->matrix[number - 1][j] == 0)
                 continue;
 
-            rc = fprintf(file, "%lu -> %lu;\n", j + 1, i + 1);
-            if (rc == EOF)
-                return rc;
+            if ((*min_paths)[j] == INT_MAX)
+            {
+                (*min_paths)[j] = (*min_paths)[number - 1] + 1;
+                rc = array_queue_push(array_queue, j + 1);
+                if (rc != EXIT_SUCCESS)
+                {
+                    free(min_paths);
+                    free_array_queue(array_queue);
+                    return ERR_NO_MEMORY;
+                }
+            }
         }
+        rc = array_queue_pop(array_queue, &number);
+    }
+    while (rc == EXIT_SUCCESS);
 
-    for (size_t i = 0; i < array_graph->size; i++)
-        if (array_graph->matrix[i][i] == 1)
-        {
-            rc = fprintf(file, "%lu;\n", i + 1);
-            if (rc == EOF)
-                return rc;
-        }
-
-    for (size_t i = 0; i < array_graph->size; i++)
-        for (size_t j = i + 1; j < array_graph->size; j++)
-        {
-            if (array_graph->matrix[j][i] == 0)
-                continue;
-
-            rc = fprintf(file, "%lu -> %lu;\n", i + 1, j  + 1);
-            if (rc == EOF)
-                return rc;
-        }
+    free_array_queue(array_queue);
 
     return EXIT_SUCCESS;
 }

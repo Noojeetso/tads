@@ -130,3 +130,27 @@ scan_integer_file(FILE *file,
 
     return EXIT_SUCCESS;
 }
+
+int
+scan_string(char *string,
+            size_t max_size)
+{
+    size_t str_length;
+
+    if (fgets(string, max_size, stdin) == NULL)
+    {
+        fputs("Ошибка считывания строки", stderr);
+        return ERR_READING_STRING;
+    }
+
+    str_length = strlen(string);
+    if (string[str_length - 1] != '\n')
+    {
+        fputs("Введённа слишком длинная строка", stderr);
+        return ERR_READING_STRING;
+    }
+
+    string[str_length - 1] = '\0';
+
+    return EXIT_SUCCESS;
+}
